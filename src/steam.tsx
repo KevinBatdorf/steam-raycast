@@ -1,12 +1,15 @@
-import { Action, ActionPanel, List } from "@raycast/api";
-import { useState } from "react";
+import { Action, ActionPanel, List, LocalStorage } from "@raycast/api";
+import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { cacheProvider } from "./lib/cache";
 import { isFakeData } from "./lib/fake";
 import { useGamesSearch, useMyGames, useRecentlyPlayedGames } from "./lib/fetcher";
-import { MyGamesListType } from "./components/ListItems";
+import { MyGamesListType, DynamicGameListItem } from "./components/ListItems";
 import { MyGames } from "./components/MyGames";
 import { Search, SearchList } from "./components/Search";
+import { DefaultActions } from "./components/Actions";
+import { useIsLoggedIn } from "./lib/hooks";
+import { GameDataSimple } from "./types";
 
 export default function Command() {
   return (
@@ -19,13 +22,24 @@ export default function Command() {
 const App = () => {
   const [search, setSearch] = useState("");
   const [hovered, setHovered] = useState(0);
-  const { data: recentlyPlayedGames } = useRecentlyPlayedGames();
+  const { data: recentlyPlayed } = useRecentlyPlayedGames();
   const { data: searchedGames } = useGamesSearch({ term: search, ready: search.length > 0 });
+  const [recentlyViewed, setRecentlyViewed] = useState<GameDataSimple[]>();
+  const isLoggedIn = useIsLoggedIn();
   const { data: myGames } = useMyGames();
+
+  useEffect(() => {
+    // LocalStorage.clear();
+    LocalStorage.getItem("recently-viewed").then((gameDataRaw) => {
+      if (!gameDataRaw) return;
+      const games = JSON.parse(String(gameDataRaw));
+      setRecentlyViewed(games ?? []);
+    });
+  }, []);
 
   return (
     <List
-      isLoading={Boolean(search)}
+      isLoading={Boolean(search) || typeof isLoggedIn === "undefined"}
       onSearchTextChange={setSearch}
       onSelectionChange={(id) => setHovered(Number(id ?? 0))}
       throttle
@@ -35,42 +49,42 @@ const App = () => {
         <SearchList searchedGames={searchedGames} hovered={hovered} />
       ) : (
         <>
-          <List.Item
-            title="My Games"
-            icon={{ source: "command-icon.png" }}
-            actions={
-              <ActionPanel>
-                <Action.Push title="View My Games" target={<MyGames />} />
-              </ActionPanel>
-            }
-          />
-          <List.Item
-            title="Search Steam Games"
-            icon={{ source: "command-icon.png" }}
-            actions={
-              <ActionPanel>
-                <Action.Push title="Search Games" target={<Search />} />
-              </ActionPanel>
-            }
-          />
-          <List.Section title="Recently Viewed Games"></List.Section>
-          {recentlyPlayedGames && recentlyPlayedGames?.length > 0 ? (
-            <List.Section title="Recently Played Games">
-              {recentlyPlayedGames?.slice(0, 5).map((game) => (
-                <MyGamesListType key={game.appid} game={game} />
+          {isLoggedIn && (
+            <List.Item
+              title="My Games"
+              icon={{ source: "command-icon.png" }}
+              actions={
+                <ActionPanel>
+                  <Action.Push title="View My Games" target={<MyGames />} />
+                  <DefaultActions />
+                </ActionPanel>
+              }
+            />
+          )}
+          {isLoggedIn && (
+            <List.Item
+              title="Search Steam Games"
+              icon={{ source: "command-icon.png" }}
+              actions={
+                <ActionPanel>
+                  <Action.Push title="Search Games" target={<Search />} />
+                  <DefaultActions />
+                </ActionPanel>
+              }
+            />
+          )}
+          {recentlyViewed && recentlyViewed?.length > 0 ? (
+            <List.Section title="Recently Viewed Games">
+              {recentlyViewed?.map((game) => (
+                <DynamicGameListItem key={game.appid} game={game} ready={true} myGames={myGames} />
               ))}
             </List.Section>
           ) : null}
-          {myGames && myGames?.length > 0 ? (
-            // TODO: Move to action panel
-            <List.Section title="Most Played Games">
-              {myGames
-                ?.filter((g) => g?.name)
-                ?.sort((a, b) => (a.playtime_forever > b.playtime_forever ? -1 : 1))
-                ?.slice(0, 5)
-                .map((game) => (
-                  <MyGamesListType key={game.appid} game={game} />
-                ))}
+          {recentlyPlayed && recentlyPlayed?.length > 0 ? (
+            <List.Section title="Recently Played Games">
+              {recentlyPlayed?.slice(0, 5).map((game) => (
+                <MyGamesListType key={game.appid} game={game} />
+              ))}
             </List.Section>
           ) : null}
         </>

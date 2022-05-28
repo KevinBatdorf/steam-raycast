@@ -6,14 +6,22 @@ import { humanTime } from "../lib/util";
 import { useGameData } from "../lib/fetcher";
 import { useEffect, useState } from "react";
 
-export const SearchedGame = ({ game, highlighted }: { game: GameSimple; highlighted: boolean }) => {
+export const DynamicGameListItem = ({
+  game,
+  ready,
+  myGames = [],
+}: {
+  game: GameSimple;
+  ready: boolean;
+  myGames?: GameDataSimple[];
+}) => {
   const [gameData, setGameData] = useState<GameData>();
   const [notFound, setNotFound] = useState(false);
   const [iconColor, setIconColor] = useState<Color.ColorLike>();
-  const { data, isError: error } = useGameData({ appid: game.appid, ready: highlighted });
+  const { data, isError: error } = useGameData({ appid: game.appid, ready });
+  const [ownedData, setOwnedData] = useState<GameDataSimple>();
 
   useEffect(() => {
-    // console.log({ data });
     if (!data) return;
     setIconColor(Color.Green);
     setGameData(data);
@@ -26,24 +34,27 @@ export const SearchedGame = ({ game, highlighted }: { game: GameSimple; highligh
     }
   }, [error]);
 
+  useEffect(() => {
+    if (!myGames?.length || !game?.appid) return;
+    const isOwned = myGames.findIndex((g) => g.appid === game.appid);
+    setOwnedData(isOwned > -1 ? myGames[isOwned] : undefined);
+  }, [game, myGames]);
+
   return (
     <List.Item
       title={game.name}
       subtitle={gameData?.type === "game" ? undefined : gameData?.type}
       id={game.appid.toString()}
       icon={{
-        source: Icon.Circle,
-        tintColor: iconColor,
+        source: ownedData?.img_icon_url
+          ? `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${ownedData.img_icon_url}.jpg`
+          : Icon.Circle,
+        tintColor: ownedData?.img_icon_url ?? iconColor,
       }}
-      //   icon={{
-      //     source: gameData?.img_icon_url
-      //       ? `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${gameData.img_icon_url}.jpg`
-      //       : "",
-      //   }}
       accessories={[{ text: notFound ? "Game not found" : gameData?.release_date?.date }]}
       actions={
         <ActionPanel>
-          <Action.Push title="View Game Details" target={<GameDetails appid={game.appid} />} />
+          <Action.Push title="View Game Details" target={<GameDetails game={game} />} />
           <DefaultActions />
         </ActionPanel>
       }
@@ -61,7 +72,7 @@ export const MyGamesListType = ({ game }: { game: GameDataSimple }) => (
     accessories={[{ text: game?.playtime_forever ? `Played for ${humanTime(game.playtime_forever)}` : undefined }]}
     actions={
       <ActionPanel>
-        <Action.Push title="View Game Details" target={<GameDetails appid={game.appid} />} />
+        <Action.Push title="View Game Details" target={<GameDetails game={game} />} />
         <DefaultActions />
       </ActionPanel>
     }

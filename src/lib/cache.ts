@@ -20,6 +20,7 @@ export function cacheProvider() {
   } catch (e) {
     console.error("Failed reading cache", e);
     map = new Map();
+    storeCache();
   }
 
   async function storeCache() {

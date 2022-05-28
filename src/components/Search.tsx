@@ -1,7 +1,7 @@
 import { List } from "@raycast/api";
 import { useState } from "react";
-import { useGamesSearch } from "../lib/fetcher";
-import { SearchedGame } from "./ListItems";
+import { useGamesSearch, useMyGames } from "../lib/fetcher";
+import { DynamicGameListItem } from "./ListItems";
 import { GameSimple } from "../types";
 
 export const Search = () => {
@@ -14,7 +14,6 @@ export const Search = () => {
       onSearchTextChange={setSearch}
       onSelectionChange={(id) => setHovered(Number(id ?? 0))}
       throttle
-      // Check caching issue with title
       searchBarPlaceholder="Search for a game by title..."
     >
       <SearchList searchedGames={searchedGames} hovered={hovered} />
@@ -23,10 +22,11 @@ export const Search = () => {
 };
 
 export const SearchList = ({ searchedGames, hovered }: { searchedGames?: GameSimple[]; hovered: number }) => {
+  const { data: myGames } = useMyGames();
   return (
     <List.Section title="Search Results">
       {searchedGames?.map((game) => (
-        <SearchedGame key={game.appid} game={game} highlighted={hovered === game.appid} />
+        <DynamicGameListItem key={game.appid} game={game} ready={hovered === game.appid} myGames={myGames} />
       ))}
     </List.Section>
   );
