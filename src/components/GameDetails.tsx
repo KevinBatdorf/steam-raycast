@@ -16,6 +16,8 @@ ${gameData.short_description}
 `
     : null;
 
+  // To do more here we would need an html to md converter
+
   useEffect(() => {
     if (error?.status === 404 && !once.current) {
       once.current = true;
@@ -40,6 +42,7 @@ ${gameData.short_description}
 
   return (
     <Detail
+      isLoading={!gameData}
       navigationTitle={gameData?.name}
       markdown={error ? error?.message : markdown}
       metadata={
@@ -47,6 +50,23 @@ ${gameData.short_description}
           <Detail.Metadata>
             {gameData?.price_overview && (
               <Detail.Metadata.Label title="Price" text={gameData?.price_overview.final_formatted} />
+            )}
+            {gameData?.metacritic?.url && (
+              <Detail.Metadata.Link
+                title="Data"
+                text={
+                  gameData?.metacritic?.score ? `Metacritic: ${gameData?.metacritic?.score.toString()}` : "Metacritic"
+                }
+                target={gameData.metacritic.url}
+              />
+            )}
+            {gameData?.developers && (
+              <Detail.Metadata.TagList title="Developers">
+                {gameData?.developers?.map((d: string) => (
+                  // TODO: Should the colors cycle?
+                  <Detail.Metadata.TagList.Item color={"#67c0f4"} text={d} />
+                ))}
+              </Detail.Metadata.TagList>
             )}
             <Detail.Metadata.Separator />
             {gameData?.platforms && (
@@ -56,16 +76,8 @@ ${gameData.short_description}
                 {gameData.platforms?.linux && <Detail.Metadata.TagList.Item text="Linux" color={"#1893d1"} />}
               </Detail.Metadata.TagList>
             )}
+            {/* TODO: wrap the separators in a conditional? */}
             <Detail.Metadata.Separator />
-            {gameData?.metacritic?.url && (
-              <Detail.Metadata.Link
-                title="Links"
-                text={
-                  gameData?.metacritic?.score ? `Metacritic: ${gameData?.metacritic?.score.toString()}` : "Metacritic"
-                }
-                target={gameData.metacritic.url}
-              />
-            )}
             {gameData?.steam_appid && (
               <Detail.Metadata.Link
                 title=""
