@@ -2,7 +2,7 @@
 
 Search and view information about any game on steam, as well as games you own.
 
-Get an API token here: https://steamcommunity.com/dev/apikey
+Get an API token here (optional): https://steamcommunity.com/dev/apikey
 
 Source repo: https://github.com/KevinBatdorf/steam-raycast
 

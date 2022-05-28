@@ -8,6 +8,12 @@ export type GameDataResponse = {
     data: GameData;
   };
 };
+export type GameDataSimpleResponse = {
+  [response: string]: {
+    total_count: number;
+    games: GameDataSimple[];
+  };
+};
 
 export type GameData = {
   type: string;
@@ -40,6 +46,7 @@ export type GameData = {
     initial: number;
     final: number;
     discount_percent: number;
+    final_formatted: string;
   };
   metacritic: {
     score: number;
@@ -77,4 +84,11 @@ export type GameData = {
     coming_soon: boolean;
     date: string;
   };
+};
+
+export type GameDataSimple = {
+  appid: number;
+  name: string;
+  playtime_forever: number;
+  img_icon_url: string;
 };

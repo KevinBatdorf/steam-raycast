@@ -1,50 +1,80 @@
-import { Action, ActionPanel, Detail, Icon, List } from "@raycast/api";
+import { Action, ActionPanel, List } from "@raycast/api";
 import { useState } from "react";
-import { useGameData, useGamesSearch } from "./hooks";
-import { GameSimple } from "./types";
 import { SWRConfig } from "swr";
-import { cacheProvider } from "./cache";
-import { isFakeData } from "./fake";
-
-const cacheKey = Math.floor(Math.random() * 10000);
-
-const GamesList = () => {
-  const { data: games, isValidating, isLoading } = useGamesSearch({ cacheKey });
-  return (
-    <List isLoading={isLoading || isValidating} searchBarPlaceholder="Search games by title">
-      {games?.map((game) => (
-        <List.Item
-          key={game.appid}
-          title={game.name}
-          actions={
-            <ActionPanel title="">
-              <Action.Push title="View game details" target={<GameData appid={game.appid} />} />
-            </ActionPanel>
-          }
-        />
-      ))}
-    </List>
-  );
-};
-const GameData = ({ appid }: { appid: number }) => {
-  const { data: gameData } = useGameData(appid);
-
-  return <Detail markdown={JSON.stringify(gameData)} />;
-};
+import { cacheProvider } from "./lib/cache";
+import { isFakeData } from "./lib/fake";
+import { useGamesSearch, useMyGames, useRecentlyPlayedGames } from "./lib/fetcher";
+import { MyGamesListType } from "./components/ListItems";
+import { MyGames } from "./components/MyGames";
+import { Search, SearchList } from "./components/Search";
 
 export default function Command() {
   return (
     <SWRConfig value={{ provider: isFakeData ? undefined : cacheProvider }}>
-      <GamesList />
+      <App />
     </SWRConfig>
   );
 }
-// TODO:
-// 0. handle search clear as you type
-// 1. Check on locale currency
-// 2. Format data into a good view
-// 3. Keep history state of previously viewed games
-// 4. Add place to enter API key - optional
 
-// TODO account
-// 1. Search accout when they view a game
+const App = () => {
+  const [search, setSearch] = useState("");
+  const [hovered, setHovered] = useState(0);
+  const { data: recentlyPlayedGames } = useRecentlyPlayedGames();
+  const { data: searchedGames } = useGamesSearch({ term: search, ready: search.length > 0 });
+  const { data: myGames } = useMyGames();
+
+  return (
+    <List
+      isLoading={Boolean(search)}
+      onSearchTextChange={setSearch}
+      onSelectionChange={(id) => setHovered(Number(id ?? 0))}
+      throttle
+      searchBarPlaceholder="Search for a game by title..."
+    >
+      {search ? (
+        <SearchList searchedGames={searchedGames} hovered={hovered} />
+      ) : (
+        <>
+          <List.Item
+            title="My Games"
+            icon={{ source: "command-icon.png" }}
+            actions={
+              <ActionPanel>
+                <Action.Push title="View My Games" target={<MyGames />} />
+              </ActionPanel>
+            }
+          />
+          <List.Item
+            title="Search Steam Games"
+            icon={{ source: "command-icon.png" }}
+            actions={
+              <ActionPanel>
+                <Action.Push title="Search Games" target={<Search />} />
+              </ActionPanel>
+            }
+          />
+          <List.Section title="Recently Viewed Games"></List.Section>
+          {recentlyPlayedGames && recentlyPlayedGames?.length > 0 ? (
+            <List.Section title="Recently Played Games">
+              {recentlyPlayedGames?.slice(0, 5).map((game) => (
+                <MyGamesListType key={game.appid} game={game} />
+              ))}
+            </List.Section>
+          ) : null}
+          {myGames && myGames?.length > 0 ? (
+            // TODO: Move to action panel
+            <List.Section title="Most Played Games">
+              {myGames
+                ?.filter((g) => g?.name)
+                ?.sort((a, b) => (a.playtime_forever > b.playtime_forever ? -1 : 1))
+                ?.slice(0, 5)
+                .map((game) => (
+                  <MyGamesListType key={game.appid} game={game} />
+                ))}
+            </List.Section>
+          ) : null}
+        </>
+      )}
+    </List>
+  );
+};

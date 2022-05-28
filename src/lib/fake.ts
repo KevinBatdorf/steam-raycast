@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { environment } from "@raycast/api";
-import { GameSimple } from "./types";
+import { GameSimple } from "../types";
 
 function fakeGame() {
   return {
