@@ -4,6 +4,8 @@ Search and view information about any game on steam, as well as games you own.
 
 Get an API token here (optional): https://steamcommunity.com/dev/apikey
 
+Search is powered by this public repo: https://github.com/KevinBatdorf/steam-api
+
 Source repo: https://github.com/KevinBatdorf/steam-raycast
 
 Notes:
