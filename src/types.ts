@@ -1,20 +1,25 @@
 export type GameSimple = {
-  appid: number;
-  name: string;
+  appid?: number;
+  name?: string;
 };
 export type GameDataResponse = {
   [appid: number]: {
-    success: boolean;
-    data: GameData;
+    success?: boolean;
+    data?: GameData;
   };
+};
+export type GameDataSimple = {
+  appid: number;
+  name: string;
+  playtime_forever: number;
+  img_icon_url: string;
 };
 export type GameDataSimpleResponse = {
   [response: string]: {
-    total_count: number;
-    games: GameDataSimple[];
+    total_count?: number;
+    games?: GameDataSimple[];
   };
 };
-
 export type GameData = {
   type: string;
   name: string;
@@ -84,11 +89,4 @@ export type GameData = {
     coming_soon: boolean;
     date: string;
   };
-};
-
-export type GameDataSimple = {
-  appid: number;
-  name: string;
-  playtime_forever: number;
-  img_icon_url: string;
 };
