@@ -22,14 +22,13 @@ export default function Command() {
 const App = () => {
   const [search, setSearch] = useState("");
   const [hovered, setHovered] = useState(0);
+  const isLoggedIn = useIsLoggedIn();
   const { data: recentlyPlayed } = useRecentlyPlayedGames();
   const { data: searchedGames } = useGamesSearch({ term: search, ready: search.length > 0 });
   const [recentlyViewed, setRecentlyViewed] = useState<GameDataSimple[]>();
-  const isLoggedIn = useIsLoggedIn();
   const { data: myGames } = useMyGames();
 
   useEffect(() => {
-    // LocalStorage.clear();
     LocalStorage.getItem("recently-viewed").then((gameDataRaw) => {
       if (!gameDataRaw) return;
       const games = JSON.parse(String(gameDataRaw));
@@ -49,7 +48,7 @@ const App = () => {
         <SearchList searchedGames={searchedGames} hovered={hovered} />
       ) : (
         <>
-          {isLoggedIn && (
+          {isLoggedIn ? (
             <List.Item
               title="My Games"
               icon={{ source: "command-icon.png" }}
@@ -60,19 +59,19 @@ const App = () => {
                 </ActionPanel>
               }
             />
-          )}
-          {isLoggedIn && (
+          ) : null}
+          {isLoggedIn ? (
             <List.Item
               title="Search Steam Games"
               icon={{ source: "command-icon.png" }}
               actions={
                 <ActionPanel>
-                  <Action.Push title="Search Games" target={<Search />} />
+                  <Action.Push title="Search Steam Games" target={<Search />} />
                   <DefaultActions />
                 </ActionPanel>
               }
             />
-          )}
+          ) : null}
           {recentlyViewed && recentlyViewed?.length > 0 ? (
             <List.Section title="Recently Viewed Games">
               {recentlyViewed?.map((game) => (

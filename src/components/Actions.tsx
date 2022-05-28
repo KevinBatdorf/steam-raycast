@@ -1,4 +1,4 @@
-import { Action, ActionPanel } from "@raycast/api";
+import { Action, ActionPanel, LocalStorage, showToast, Toast } from "@raycast/api";
 import { GameDataSimple } from "../types";
 import { MyGames } from "./MyGames";
 import { RandomGamesList } from "./RandomGamesList";
@@ -19,5 +19,15 @@ export const DefaultActions = () => (
     />
     <Action.Push title="View Recently Played Games" target={<RecentlyPlayedGames />} />
     <Action.Push title="View Random Games" target={<RandomGamesList />} />
+    <Action
+      title="Clear Recent History"
+      onAction={async () => {
+        await LocalStorage.clear();
+        await showToast({
+          title: "Success. Reload to see changes",
+          style: Toast.Style.Success,
+        });
+      }}
+    />
   </ActionPanel.Section>
 );

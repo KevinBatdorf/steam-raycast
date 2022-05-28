@@ -1,5 +1,7 @@
 import { List } from "@raycast/api";
+import { NoApiKey } from "../errors";
 import { useMyGames } from "../lib/fetcher";
+import { useIsLoggedIn } from "../lib/hooks";
 import { GameDataSimple } from "../types";
 import { MyGamesListType } from "./ListItems";
 
@@ -11,6 +13,9 @@ type SearchType = {
 export const MyGames = ({ sortBy = "name", order = "asc", extraFilter = () => true }: SearchType) => {
   const { data: myGames, isLoading } = useMyGames();
   const direction = order === "asc" ? 1 : -1;
+  const isLoggedIn = useIsLoggedIn();
+
+  if (!isLoggedIn) return <NoApiKey />;
   return (
     <List isLoading={isLoading} searchBarPlaceholder="Search your games...">
       {myGames

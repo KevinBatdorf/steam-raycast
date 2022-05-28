@@ -11,6 +11,8 @@ const fakeGame = (): GameSimple => ({
 
 export const fakeGameDataSimpleResponse = (count: number): GameDataSimple[] =>
   Array.from({ length: count }, fakeGameDataSimple);
+export const fakeGameDataSimpleMany = (count: number): GameDataSimple[] =>
+  Array.from({ length: count }, fakeGameDataSimple);
 export const fakeGameDataSimple = (): GameDataSimple => {
   const appid = +Math.random().toString().slice(2, 19);
   return {
@@ -30,7 +32,6 @@ export const fakeGameDataResponse = (): GameDataResponse => {
     },
   };
 };
-
 export const fakeGameData = (appid?: number): GameData => {
   return {
     type: "game",
@@ -43,7 +44,7 @@ export const fakeGameData = (appid?: number): GameData => {
     short_description: faker.lorem.paragraph(),
     supported_languages: ["en"],
     header_image: "",
-    website: "",
+    website: faker.internet.url(),
     pc_requirements: {
       minimum: faker.internet.url(),
       recommended: faker.internet.url(),

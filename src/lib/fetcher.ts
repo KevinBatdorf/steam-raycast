@@ -1,8 +1,9 @@
 import fetch from "node-fetch";
 import useSWR, { useSWRConfig } from "swr";
-import { fakeGames, isFakeData } from "./fake";
+import { fakeGameData, fakeGameDataSimpleMany, fakeGames, isFakeData } from "./fake";
 import { GameData, GameDataResponse, GameDataSimple, GameDataSimpleResponse, GameSimple } from "../types";
 import { getPreferenceValues, openCommandPreferences, showToast, Toast } from "@raycast/api";
+import { useIsLoggedIn } from "./hooks";
 
 async function fetchGames(url: string) {
   const response = await fetch(url);
@@ -52,9 +53,8 @@ async function fetcherWithAuth(url: string) {
 export const useGamesSearch = ({ term = "", cacheKey = 0, ready = true }) => {
   const { data, error, isValidating } = useSWR<GameSimple[]>(
     ready ? `https://steam-search.vercel.app/api/games?cacheKey=${cacheKey}&search=${term}` : null,
-    isFakeData ? () => fakeGames(15) : fetchGames
+    isFakeData ? () => fakeGames(30) : fetchGames
   );
-
   return {
     data,
     isLoading: !data && !error && ready,
@@ -69,7 +69,10 @@ export const useGameData = ({ appid = 0, ready = true }) => {
     appid,
     url: `https://store.steampowered.com/api/appdetails?appids=${appid}`,
   };
-  const { data, error, isValidating } = useSWR<GameData>(ready && appid ? key : null, fetchGameData);
+  const { data, error, isValidating } = useSWR<GameData | undefined>(
+    ready && appid ? key : null,
+    isFakeData ? () => fakeGameData(30) : fetchGameData
+  );
 
   // Slightly hacky way to grab something from swr cache
   const cacheKey = `#url:"${key.url}",appid:${appid},`;
@@ -88,9 +91,10 @@ export const useGameData = ({ appid = 0, ready = true }) => {
 export const useRecentlyPlayedGames = () => useGetOwnedGames("GetRecentlyPlayedGames");
 export const useMyGames = () => useGetOwnedGames("GetOwnedGames");
 const useGetOwnedGames = (type: string) => {
+  const isLoggedIn = useIsLoggedIn();
   const { data, error, isValidating } = useSWR<GameDataSimple[]>(
-    `https://api.steampowered.com/IPlayerService/${type}/v1/?format=json&include_appinfo=1`,
-    fetcherWithAuth
+    isLoggedIn ? `https://api.steampowered.com/IPlayerService/${type}/v1/?format=json&include_appinfo=1` : null,
+    isFakeData ? () => fakeGameDataSimpleMany(30) : fetcherWithAuth
   );
 
   return {
