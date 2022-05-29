@@ -4,6 +4,7 @@ import { fakeGameData, fakeGameDataSimpleMany, fakeGames, isFakeData } from "./f
 import { GameData, GameDataResponse, GameDataSimple, GameDataSimpleResponse, GameSimple } from "../types";
 import { getPreferenceValues, openCommandPreferences, showToast, Toast } from "@raycast/api";
 import { useIsLoggedIn } from "./hooks";
+import { reverse } from "./util";
 
 async function fetchGames(url: string) {
   const response = await fetch(url);
@@ -98,7 +99,7 @@ const useGetOwnedGames = (type: string) => {
   );
 
   return {
-    data,
+    data: data ? reverse(data) : undefined,
     isLoading: !data && !error,
     isValidating,
     isError: error,

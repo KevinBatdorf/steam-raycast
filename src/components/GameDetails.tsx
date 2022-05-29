@@ -1,12 +1,14 @@
-import { Action, ActionPanel, Detail, LocalStorage, showToast, Toast } from "@raycast/api";
+import { ActionPanel, Detail, LocalStorage, showToast, Toast } from "@raycast/api";
 import { useEffect, useRef } from "react";
 import { useGameData } from "../lib/fetcher";
+import { useIsLoggedIn } from "../lib/hooks";
 import { GameDataSimple, GameSimple } from "../types";
 import { LaunchActions } from "./Actions";
 
 export const GameDetails = ({ game }: { game: GameSimple | GameDataSimple }) => {
   const { data: gameData, isError: error } = useGameData({ appid: game.appid });
   const once = useRef(false);
+  const isLoggedIn = useIsLoggedIn();
 
   const markdown = gameData
     ? `
@@ -32,21 +34,27 @@ ${gameData.short_description}
 
   useEffect(() => {
     if (!game?.appid || error) return;
-    // prepend to localstorage max 10 entries
+    // prepend to localstorage max 10 entries or 5 if logged in
     LocalStorage.getItem("recently-viewed").then((gamesRaw) => {
       const games: GameSimple[] = gamesRaw ? JSON.parse(String(gamesRaw)) : [];
       if (games.some((g) => g.appid === game.appid)) return;
-      const newItems = [game, ...(games?.slice(0, 9) ?? [])];
+      const newItems = [game, ...(games?.slice(0, isLoggedIn ? 4 : 9) ?? [])];
       LocalStorage.setItem("recently-viewed", JSON.stringify(newItems));
     });
-  }, [game, error]);
+  }, [game, error, isLoggedIn]);
 
   return (
     <Detail
       isLoading={!gameData}
       navigationTitle={gameData?.name}
       markdown={error ? error?.message : markdown}
-      actions={error ? null : <LaunchActions appid={game?.appid} />}
+      actions={
+        error ? null : (
+          <ActionPanel>
+            <LaunchActions appid={game?.appid} />
+          </ActionPanel>
+        )
+      }
       metadata={
         error ? null : (
           <Detail.Metadata>

@@ -36,9 +36,21 @@ const App = () => {
     });
   }, []);
 
+  const loading = () => {
+    if (search) {
+      return !searchedGames;
+    }
+    if (isLoggedIn) {
+      // If logged in, only show if the data is ready
+      return !myGames || !recentlyPlayed;
+    }
+    // If not logged in, we don't need to wait for data
+    return false;
+  };
+
   return (
     <List
-      isLoading={Boolean(search) || typeof isLoggedIn === "undefined"}
+      isLoading={loading()}
       onSearchTextChange={setSearch}
       onSelectionChange={(id) => setHovered(Number(id ?? 0))}
       throttle
@@ -81,7 +93,7 @@ const App = () => {
           ) : null}
           {recentlyPlayed && recentlyPlayed?.length > 0 ? (
             <List.Section title="Recently Played Games">
-              {recentlyPlayed?.slice(0, 5).map((game) => (
+              {recentlyPlayed?.slice(0, 5)?.map((game) => (
                 <MyGamesListType key={game.appid} game={game} />
               ))}
             </List.Section>

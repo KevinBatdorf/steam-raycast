@@ -6,8 +6,8 @@
   "icon": "command-icon.png",
   "author": "KevinBatdorf",
   "categories": [
-    "Fun",
-    "Media"
+    "Media",
+    "Fun"
   ],
   "license": "MIT",
   "commands": [
@@ -15,7 +15,7 @@
       "name": "steam",
       "title": "Search Games",
       "subtitle": "Steam",
-      "description": "Searches the Steam api for game information search your own Steam account.",
+      "description": "Search the Steam api for game information.",
       "mode": "view"
     }
   ],
