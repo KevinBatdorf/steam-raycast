@@ -1,7 +1,8 @@
-import { Detail, LocalStorage, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Detail, LocalStorage, showToast, Toast } from "@raycast/api";
 import { useEffect, useRef } from "react";
 import { useGameData } from "../lib/fetcher";
 import { GameDataSimple, GameSimple } from "../types";
+import { LaunchActions } from "./Actions";
 
 export const GameDetails = ({ game }: { game: GameSimple | GameDataSimple }) => {
   const { data: gameData, isError: error } = useGameData({ appid: game.appid });
@@ -45,6 +46,7 @@ ${gameData.short_description}
       isLoading={!gameData}
       navigationTitle={gameData?.name}
       markdown={error ? error?.message : markdown}
+      actions={error ? null : <LaunchActions appid={game?.appid} />}
       metadata={
         error ? null : (
           <Detail.Metadata>
@@ -65,7 +67,29 @@ ${gameData.short_description}
                 <Detail.Metadata.TagList.Item color={"#67c0f4"} text={gameData?.developers[0]} />
               </Detail.Metadata.TagList>
             ) : null}
-            <Detail.Metadata.Separator />
+            {gameData?.categories?.length > 0 ? (
+              <>
+                <Detail.Metadata.Separator />
+                <Detail.Metadata.TagList title="Categories">
+                  {gameData?.categories[0]?.description ? (
+                    <Detail.Metadata.TagList.Item color={"#cccccc"} text={gameData?.categories[0]?.description} />
+                  ) : null}
+                  {gameData?.categories[1]?.description ? (
+                    <Detail.Metadata.TagList.Item color={"#cccccc"} text={gameData?.categories[1]?.description} />
+                  ) : null}
+                  {gameData?.categories[2]?.description ? (
+                    <Detail.Metadata.TagList.Item color={"#cccccc"} text={gameData?.categories[2]?.description} />
+                  ) : null}
+                  {gameData?.categories[3]?.description ? (
+                    <Detail.Metadata.TagList.Item color={"#cccccc"} text={gameData?.categories[3]?.description} />
+                  ) : null}
+                  {gameData?.categories[4]?.description ? (
+                    <Detail.Metadata.TagList.Item color={"#cccccc"} text={gameData?.categories[4]?.description} />
+                  ) : null}
+                </Detail.Metadata.TagList>
+              </>
+            ) : null}
+            {gameData?.platforms ? <Detail.Metadata.Separator /> : null}
             {gameData?.platforms ? (
               <Detail.Metadata.TagList title="Platform">
                 {gameData.platforms?.windows && <Detail.Metadata.TagList.Item text="Windows" color={"#7eba43"} />}
@@ -73,12 +97,12 @@ ${gameData.short_description}
                 {gameData.platforms?.linux && <Detail.Metadata.TagList.Item text="Linux" color={"#1893d1"} />}
               </Detail.Metadata.TagList>
             ) : null}
-            <Detail.Metadata.Separator />
+            {gameData?.steam_appid || gameData?.website ? <Detail.Metadata.Separator /> : null}
             {gameData?.steam_appid ? (
               <Detail.Metadata.Link
                 title=""
                 target={`https://store.steampowered.com/app/${gameData.steam_appid}`}
-                text="Steam page"
+                text="Steam Page"
               />
             ) : null}
             {gameData?.website ? <Detail.Metadata.Link title="" text="Website" target={gameData.website} /> : null}

@@ -1,6 +1,6 @@
 import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
 import { GameData, GameDataSimple, GameSimple } from "../types";
-import { DefaultActions } from "./Actions";
+import { DefaultActions, LaunchActions } from "./Actions";
 import { GameDetails } from "./GameDetails";
 import { humanTime } from "../lib/util";
 import { useGameData } from "../lib/fetcher";
@@ -42,9 +42,9 @@ export const DynamicGameListItem = ({
 
   return (
     <List.Item
-      title={game.name}
+      title={game?.name ?? ""}
       subtitle={gameData?.type === "game" ? undefined : gameData?.type}
-      id={game.appid.toString()}
+      id={game?.appid ? game.appid.toString() : ""}
       icon={{
         source: ownedData?.img_icon_url
           ? `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${ownedData.img_icon_url}.jpg`
@@ -55,6 +55,7 @@ export const DynamicGameListItem = ({
       actions={
         <ActionPanel>
           <Action.Push title="View Game Details" target={<GameDetails game={game} />} />
+          <LaunchActions appid={game?.appid} />
           <DefaultActions />
         </ActionPanel>
       }
@@ -73,6 +74,7 @@ export const MyGamesListType = ({ game }: { game: GameDataSimple }) => (
     actions={
       <ActionPanel>
         <Action.Push title="View Game Details" target={<GameDetails game={game} />} />
+        <LaunchActions appid={game?.appid} />
         <DefaultActions />
       </ActionPanel>
     }
