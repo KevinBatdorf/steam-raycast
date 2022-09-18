@@ -101,7 +101,7 @@ const useGetOwnedGames = (type: string) => {
     `https://api.steampowered.com/IPlayerService/${type}/v1/?format=json&include_appinfo=1`,
     isFakeData ? () => fakeGameDataSimpleMany(30) : fetcherWithAuth
   );
-  if (type === "GetRecentlyPlayedGames") console.log(data);
+
   return {
     data: data ? reverse(data) : undefined,
     isLoading: !data && !error,
