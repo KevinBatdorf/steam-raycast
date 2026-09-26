@@ -11,13 +11,11 @@ export const DynamicGameListItem = ({
   context,
   ready,
   myGames = [],
-  fromAI,
 }: {
   game: GameSimple;
-  context: "recs" | "recent" | "recently-viewed" | "random" | "Search";
+  context: "recent" | "recently-viewed" | "random" | "Search";
   ready: boolean;
   myGames?: GameDataSimple[];
-  fromAI?: boolean; // todo: couldn't pull the ItemAccessory in
 }) => {
   const [gameData, setGameData] = useState<GameData>();
   const [notFound, setNotFound] = useState(false);
@@ -47,7 +45,7 @@ export const DynamicGameListItem = ({
   return (
     <List.Item
       title={game?.name ?? ""}
-      subtitle={(fromAI ? "ai recommended " : undefined) ?? (gameData?.type === "game" ? undefined : gameData?.type)}
+      subtitle={gameData?.type === "game" ? undefined : gameData?.type}
       id={context + (game?.appid ? game.appid.toString() : "")}
       icon={{
         source: ownedData?.img_icon_url

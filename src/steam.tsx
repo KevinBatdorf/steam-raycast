@@ -1,4 +1,4 @@
-import { AI, Action, ActionPanel, Icon, List, LocalStorage, environment } from "@raycast/api";
+import { Action, ActionPanel, Icon, List, LocalStorage } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { SWRConfig } from "swr";
 import { cacheProvider } from "./lib/cache";
@@ -10,7 +10,6 @@ import { Search, SearchList } from "./components/Search";
 import { DefaultActions } from "./components/Actions";
 import { useIsLoggedIn } from "./lib/hooks";
 import { GameDataSimple } from "./types";
-import { GameRecommendations } from "./components/GameRecommendations";
 
 export default function Command() {
   return (
@@ -85,7 +84,6 @@ const App = () => {
               }
             />
           ) : null}
-          {isLoggedIn && environment.canAccess(AI) ? <GameRecommendations recentlyViewed={recentlyViewed} /> : null}
           {recentlyViewed && recentlyViewed?.length > 0 ? (
             <List.Section title="Recently Viewed Games">
               {recentlyViewed?.map((game) => (

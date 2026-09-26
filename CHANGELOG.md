@@ -1,5 +1,9 @@
 # Steam Changelog
 
+## [Remove AI Recommendation] - {PR_MERGE_DATE}
+
+- Remove the AI game recommendation from the main view, which ran an AI request every time the command opened. Ask Raycast AI with @steam instead
+
 ## [Open in Steam] - {PR_MERGE_DATE}
 
 - Add an Open in Steam link to game details
