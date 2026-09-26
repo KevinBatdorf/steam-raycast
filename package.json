@@ -78,7 +78,7 @@
     }
   ],
   "ai": {
-    "instructions": "Use Search Steam Games for broad Steam game title searches and Get Steam Game Details when the user asks about one game or provides a Steam app ID/store URL. Use Search Steam Users when the user asks about a Steam user or profile. Prefer direct Steam IDs, profile URLs, and vanity URLs when present. Display-name user search can return multiple people, so do not claim an exact identity unless the result came from a Steam ID, profile URL, or vanity URL. Use Get Owned Games for questions about the user's own library and playtime, and Get Recently Played Games for what they played lately. Use Get Game News for updates, patches, or news about a game. Only use Launch Game or Install Game when the user explicitly asks to play, launch, or install a game; pass the app ID when another tool already returned it.",
+    "instructions": "Use Search Steam Games for broad Steam game title searches and Get Steam Game Details when the user asks about one game or provides a Steam app ID/store URL. Use Search Steam Users when the user asks about a Steam user or profile. Prefer direct Steam IDs, profile URLs, and vanity URLs when present. Display-name user search can return multiple people, so do not claim an exact identity unless the result came from a Steam ID, profile URL, or vanity URL. Use Get Owned Games for questions about the user's own library and playtime, and Get Recently Played Games for what they played lately. Use Get Game News for updates, patches, or news about a game. Only use Launch Game or Install Game when the user explicitly asks to play, launch, or install a game. Both need an app ID: get it from Search Steam Games or Get Owned Games first.",
     "evals": [
       {
         "input": "@steam find Stardew Valley",
@@ -641,9 +641,23 @@
               "name": "Unexpected Install"
             },
             "opened": true
+          },
+          "search-steam-games": {
+            "query": "Hades",
+            "results": [
+              {
+                "appid": 1145360,
+                "name": "Hades",
+                "storeUrl": "https://store.steampowered.com/app/1145360"
+              }
+            ],
+            "warnings": []
           }
         },
         "expected": [
+          {
+            "callsTool": "search-steam-games"
+          },
           {
             "callsTool": "launch-game"
           },
@@ -670,9 +684,23 @@
               "name": "Unexpected Launch"
             },
             "opened": true
+          },
+          "search-steam-games": {
+            "query": "Terraria",
+            "results": [
+              {
+                "appid": 105600,
+                "name": "Terraria",
+                "storeUrl": "https://store.steampowered.com/app/105600"
+              }
+            ],
+            "warnings": []
           }
         },
         "expected": [
+          {
+            "callsTool": "search-steam-games"
+          },
           {
             "callsTool": "install-game"
           },
