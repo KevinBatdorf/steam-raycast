@@ -1,6 +1,7 @@
 import {
   cleanSteamGameQuery,
   getSteamGameData,
+  localListWarning,
   searchSteamGames,
   SteamGameSearchResult,
   toSteamGameSummary,
@@ -50,13 +51,14 @@ export default async function searchSteamGamesTool(input: Input): Promise<Output
 
   try {
     const results = await searchSteamGames(query, { maxResults });
+    const warnings = [localListWarning()].filter((warning): warning is string => Boolean(warning));
     const includeDetails = Boolean(input.includeDetails);
 
     if (!includeDetails) {
       return {
         query,
         results,
-        warnings: [],
+        warnings,
       };
     }
 
@@ -80,7 +82,7 @@ export default async function searchSteamGamesTool(input: Input): Promise<Output
     return {
       query,
       results: detailedResults,
-      warnings: [],
+      warnings,
     };
   } catch (error) {
     return {

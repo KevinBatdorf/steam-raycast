@@ -1,5 +1,12 @@
 # Steam Changelog
 
+## [Web API Key Notice] - {PR_MERGE_DATE}
+
+- Tell users without a Web API Key, once, that a future version will require one
+- Add an Open Extension Preferences button when Steam rejects the key while downloading the game list
+- Keep the list responsive while the game list downloads for the first time
+- AI answers now mention when the local game list is out of date
+
 ## [Details and News] - {PR_MERGE_DATE}
 
 - Show game details beside search results with Show Details

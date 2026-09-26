@@ -796,7 +796,7 @@
       "name": "token",
       "type": "password",
       "title": "Web API Key",
-      "description": "Add your Steam Web API key. With a key, search runs from a local list of every Steam game.",
+      "description": "Your Steam Web API key, from steamcommunity.com/dev/apikey. With a key, search runs from a local list of every Steam game. A future version will require it.",
       "placeholder": "Web API Key",
       "required": false
     },
