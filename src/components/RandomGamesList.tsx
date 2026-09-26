@@ -1,6 +1,7 @@
 import { List } from "@raycast/api";
 import { useState } from "react";
 import { useMyGames, useRandomGames } from "../lib/fetcher";
+import { useShowingDetail } from "../lib/hooks";
 import { appidFromItemId } from "../lib/util";
 import { DynamicGameListItem } from "./ListItems";
 
@@ -8,11 +9,13 @@ export const RandomGamesList = () => {
   const { data: games, isLoading } = useRandomGames();
   const [hovered, setHovered] = useState(0);
   const { data: myGames } = useMyGames();
+  const { showingDetail, toggleDetail } = useShowingDetail();
 
   return (
     <List
       navigationTitle="Random Games"
       filtering={false}
+      isShowingDetail={showingDetail}
       isLoading={isLoading}
       searchBarPlaceholder=""
       onSelectionChange={(id) => setHovered(appidFromItemId(id))}
@@ -24,6 +27,8 @@ export const RandomGamesList = () => {
           game={game}
           ready={hovered === game.appid}
           myGames={myGames}
+          showingDetail={showingDetail}
+          onToggleDetail={toggleDetail}
         />
       ))}
     </List>

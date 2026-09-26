@@ -12,6 +12,7 @@ import {
 } from "@raycast/api";
 import { crossLaunchCommand } from "raycast-cross-extension";
 import { GameDataSimple } from "../types";
+import { GameNews } from "./GameNews";
 import { MyGames } from "./MyGames";
 import { RandomGamesList } from "./RandomGamesList";
 import { RecentlyPlayedGames } from "./RecentlyPlayedGames";
@@ -65,6 +66,7 @@ export const LaunchActions = ({ name = "", appid = 0 }) => {
   return (
     <ActionPanel.Section>
       <Action.OpenInBrowser title="View in Browser" url={`https://store.steampowered.com/app/${appid}`} />
+      <Action.Push icon={Icon.Megaphone} title="View News" target={<GameNews appid={appid} name={name} />} />
       <Action.OpenInBrowser
         icon={Icon.Binoculars}
         // eslint-disable-next-line @raycast/prefer-title-case
