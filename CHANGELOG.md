@@ -1,5 +1,10 @@
 # Steam Changelog
 
+## [Local Search] - {PR_MERGE_DATE}
+
+- With a Web API Key, search runs from a local list of every Steam game, so results appear instantly
+- Add a Game List Refresh preference for how often that list checks Steam for new games
+
 ## [Search Improvements] - {PR_MERGE_DATE}
 
 - Show game icons in search results, including games you don't own
