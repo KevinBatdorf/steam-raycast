@@ -1,5 +1,9 @@
 # Steam Changelog
 
+## [Fix Game Details] - {PR_MERGE_DATE}
+
+- Fix game details showing "Game not found" for every game
+
 ## [New Feature] - 2026-06-29
 
 - Add a Search Users command for looking up Steam profiles
