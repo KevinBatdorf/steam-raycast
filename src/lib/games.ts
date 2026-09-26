@@ -2,6 +2,7 @@ import { captureException } from "@raycast/api";
 import { GameData, GameDataResponse, GameSimple, SteamGameHit } from "../types";
 import { steamFetch } from "./http";
 import { isIndexReady, searchIndex } from "./search-index";
+import { getOwnedGames } from "./library";
 
 export type SteamGameSummary = {
   appid: number;
@@ -261,4 +262,21 @@ function hasAppId(game: GameSimple): game is GameSimple & { appid: number } {
 
 function cleanText(value?: string) {
   return value?.replace(/\s+/g, " ").trim();
+}
+
+export async function resolveSteamGameTarget(input: { appid?: number; query?: string }) {
+  const query = cleanSteamGameQuery(input.query ?? "");
+  const appid = input.appid ?? (query ? getSteamAppIdFromInput(query) : undefined);
+  if (appid) {
+    // Delisted games have no store page but can still be in the user's library
+    const name = await getSteamGameData(appid)
+      .then((data) => data.name)
+      .catch(async () => (await getOwnedGames().catch(() => undefined))?.games.find((g) => g.appid === appid)?.name);
+    if (!name) throw new Error(`Steam has no game with app ID ${appid}.`);
+    return { appid, name };
+  }
+  if (!query) throw new Error("Name the game or give its Steam app ID.");
+  const [match] = await searchSteamGames(query, { maxResults: 1 });
+  if (!match) throw new Error(`No Steam game matched "${query}".`);
+  return { appid: match.appid, name: match.name };
 }

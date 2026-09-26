@@ -25,3 +25,4 @@ Notes:
 - Filter your search
 - Browse SteamGridDB images (requires [SteamGridDB](https://raycast.com/litomore/steamgriddb) extension)
 - Browse ProtonDB scores (requires [ProtonDB](https://raycast.com/litomore/protondb) extension)
+- Ask Raycast AI about your library, what you played lately, and game news, or have it launch or install a game
