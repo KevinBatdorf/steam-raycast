@@ -1,5 +1,6 @@
 import { getPreferenceValues } from "@raycast/api";
 import { GameDataSimple } from "../types";
+import { steamFetch } from "./http";
 
 type SteamApiErrorOptions = {
   status?: number;
@@ -451,7 +452,7 @@ async function getCommunitySession() {
 }
 
 async function fetchCommunitySession() {
-  const response = await fetch(`${STEAM_COMMUNITY_BASE}/`, {
+  const response = await steamFetch(`${STEAM_COMMUNITY_BASE}/`, {
     headers: {
       "User-Agent": "Mozilla/5.0",
     },
@@ -480,7 +481,7 @@ async function fetchCommunitySession() {
 }
 
 async function fetchJson<T>(url: URL, init?: RequestInit) {
-  const response = await fetch(url, init);
+  const response = await steamFetch(url, init);
 
   if (!response.ok) {
     const text = await response.text();

@@ -1,4 +1,5 @@
-import { ActionPanel, Detail, LocalStorage, showToast, Toast } from "@raycast/api";
+import { ActionPanel, Detail, LocalStorage } from "@raycast/api";
+import { showFailureToast } from "@raycast/utils";
 import { useEffect, useRef } from "react";
 import { useGameData } from "../lib/fetcher";
 import { useIsLoggedIn } from "../lib/hooks";
@@ -24,11 +25,7 @@ ${gameData.short_description}
   useEffect(() => {
     if (error?.status === 404 && !once.current) {
       once.current = true;
-      showToast({
-        title: "Error",
-        message: error.message,
-        style: Toast.Style.Failure,
-      });
+      showFailureToast(error, { title: "Error" });
     }
   }, [error]);
 
