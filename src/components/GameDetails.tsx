@@ -113,6 +113,9 @@ ${gameData.short_description}
                 text="Steam Page"
               />
             ) : null}
+            {gameData?.steam_appid ? (
+              <Detail.Metadata.Link title="" target={`steam://store/${gameData.steam_appid}`} text="Open in Steam" />
+            ) : null}
             {gameData?.website ? <Detail.Metadata.Link title="" text="Website" target={gameData.website} /> : null}
           </Detail.Metadata>
         )
