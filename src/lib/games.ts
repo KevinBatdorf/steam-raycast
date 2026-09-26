@@ -1,3 +1,4 @@
+import { captureException } from "@raycast/api";
 import { GameData, GameDataResponse, GameSimple, SteamGameHit } from "../types";
 import { steamFetch } from "./http";
 import { isIndexReady, searchIndex } from "./search-index";
@@ -163,12 +164,22 @@ export async function searchSteamGameHits(term: string): Promise<SteamGameHit[]>
   return [...hits.values()];
 }
 
+function searchLocal(query: string, limit: number) {
+  try {
+    return searchIndex(query, limit);
+  } catch (error) {
+    captureException(error);
+    return [];
+  }
+}
+
 export async function searchSteamGames(input: string, options: SteamGameSearchOptions = {}) {
   const query = cleanSteamGameQuery(input);
   if (!query) return [];
 
   const maxResults = options.maxResults ?? 20;
-  const games = isIndexReady() ? searchIndex(query, maxResults) : await searchSteamGameHits(query);
+  const local = isIndexReady() ? searchLocal(query, maxResults) : [];
+  const games = local.length ? local : await searchSteamGameHits(query);
   return games.slice(0, maxResults).map(toSteamGameSearchResult);
 }
 

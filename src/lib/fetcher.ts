@@ -94,7 +94,7 @@ export const useGamesSearch = ({ term = "", execute = true }) => {
     () => (active && indexReady ? safely(() => searchIndex(term), undefined) : undefined),
     [active, indexReady, term],
   );
-  // The local list has games and software only, so DLC and soundtracks still need the online search
+  // The local list lacks DLC, soundtracks and anything newer than its last sync, so misses go online
   const local = found?.length ? found : undefined;
   const remote = useCachedPromise(isFakeData ? fakeSearch : searchSteamGameHits, [term], {
     execute: active && !local,
