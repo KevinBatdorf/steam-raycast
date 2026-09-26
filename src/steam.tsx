@@ -1,9 +1,9 @@
-import { Action, ActionPanel, Icon, List, LocalStorage } from "@raycast/api";
+import { Action, ActionPanel, Icon, List, LocalStorage, environment } from "@raycast/api";
+import { rm } from "fs/promises";
+import { join } from "path";
 import { useEffect, useState } from "react";
-import { SWRConfig } from "swr";
-import { cacheProvider } from "./lib/cache";
-import { isFakeData } from "./lib/fake";
 import { useGamesSearch, useMyGames, useRecentlyPlayedGames } from "./lib/fetcher";
+import { appidFromItemId } from "./lib/util";
 import { MyGamesListType, DynamicGameListItem } from "./components/ListItems";
 import { MyGames } from "./components/MyGames";
 import { Search, SearchList } from "./components/Search";
@@ -12,21 +12,21 @@ import { useIsLoggedIn } from "./lib/hooks";
 import { GameDataSimple } from "./types";
 
 export default function Command() {
-  return (
-    <SWRConfig value={{ provider: isFakeData ? undefined : cacheProvider }}>
-      <App />
-    </SWRConfig>
-  );
-}
-
-const App = () => {
   const [search, setSearch] = useState("");
   const [hovered, setHovered] = useState(0);
   const isLoggedIn = useIsLoggedIn();
-  const { data: recentlyPlayed } = useRecentlyPlayedGames();
-  const { data: searchedGames } = useGamesSearch({ term: search, execute: search.length > 0 });
+  const { data: recentlyPlayed, isLoading: recentlyPlayedLoading } = useRecentlyPlayedGames();
+  const { data: searchedGames, isLoading: searchLoading } = useGamesSearch({
+    term: search,
+    execute: search.length > 0,
+  });
   const [recentlyViewed, setRecentlyViewed] = useState<GameDataSimple[]>();
-  const { data: myGames } = useMyGames();
+  const { data: myGames, isLoading: myGamesLoading } = useMyGames();
+
+  useEffect(() => {
+    // Older versions kept an SWR cache here that nothing reads any more
+    rm(join(environment.supportPath, "swr-cache"), { force: true }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     LocalStorage.getItem("recently-viewed").then((gameDataRaw) => {
@@ -38,11 +38,10 @@ const App = () => {
 
   const loading = () => {
     if (search) {
-      return !searchedGames;
+      return searchLoading;
     }
     if (isLoggedIn) {
-      // If logged in, only show if the data is ready
-      return !myGames || !recentlyPlayed;
+      return myGamesLoading || recentlyPlayedLoading;
     }
     // If not logged in, we don't need to wait for data
     return false;
@@ -52,7 +51,7 @@ const App = () => {
     <List
       isLoading={loading()}
       onSearchTextChange={setSearch}
-      onSelectionChange={(id) => setHovered(Number(id ?? 0))}
+      onSelectionChange={(id) => setHovered(appidFromItemId(id))}
       throttle
       searchBarPlaceholder="Search for a game by title..."
     >
@@ -108,4 +107,4 @@ const App = () => {
       )}
     </List>
   );
-};
+}

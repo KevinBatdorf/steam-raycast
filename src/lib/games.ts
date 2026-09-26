@@ -29,17 +29,29 @@ export type SteamGameSearchResult = {
   storeUrl: string;
 };
 
+export type SteamGameHit = {
+  appid: number;
+  name: string;
+  icon?: string;
+};
+
+type CommunityApp = {
+  appid: string;
+  name: string;
+  icon?: string;
+};
+
 type SteamGameDetailsRequest = {
   appid: number;
   url: string;
 };
 
 type SteamGameSearchOptions = {
-  cacheKey?: number;
   maxResults?: number;
 };
 
 const STEAM_STORE_BASE = "https://store.steampowered.com";
+const STEAM_COMMUNITY_BASE = "https://steamcommunity.com";
 const STEAM_SEARCH_BASE = "https://steam-search.vercel.app/api/games";
 
 export class SteamGameError extends Error {
@@ -100,14 +112,16 @@ export function getSteamAppIdFromInput(input: string) {
   return undefined;
 }
 
-export async function fetchSteamGames(url: string) {
+export async function fetchSteamGames(url: string): Promise<SteamGameHit[]> {
   const response = await steamFetch(url);
   if (!response.ok) {
     throw new SteamGameError(`${response.status} ${response.statusText}`, { status: response.status });
   }
 
   const games = (await response.json()) as GameSimple[];
-  return games?.filter(hasAppId).map((game) => ({ appid: game.appid, name: game.name })) ?? [];
+  return (
+    games?.filter(hasAppId).map((game) => ({ appid: game.appid, name: game.name ?? `Steam App ${game.appid}` })) ?? []
+  );
 }
 
 export async function fetchSteamGameData({ url }: SteamGameDetailsRequest) {
@@ -127,12 +141,38 @@ export async function fetchSteamGameData({ url }: SteamGameDetailsRequest) {
   return entry.data;
 }
 
+async function fetchCommunityApps(term: string): Promise<SteamGameHit[]> {
+  const response = await steamFetch(`${STEAM_COMMUNITY_BASE}/actions/SearchApps/${encodeURIComponent(term)}`);
+  if (!response.ok) {
+    throw new SteamGameError(`${response.status} ${response.statusText}`, { status: response.status });
+  }
+  const apps = (await response.json()) as CommunityApp[];
+  return (apps ?? [])
+    .map((app) => ({ appid: Number(app.appid), name: app.name, icon: app.icon }))
+    .filter((app) => app.appid > 0 && app.name);
+}
+
+// Steam's keyless app search ranks well but returns at most 10 games; the backend supplies the rest
+export async function searchSteamGameHits(term: string): Promise<SteamGameHit[]> {
+  const sources = await Promise.allSettled([fetchCommunityApps(term), fetchSteamGames(getSteamGameSearchUrl(term))]);
+  const fulfilled = sources.flatMap((source) => (source.status === "fulfilled" ? [source.value] : []));
+  if (!fulfilled.length) throw (sources[0] as PromiseRejectedResult).reason;
+
+  const hits = new Map<number, SteamGameHit>();
+  for (const results of fulfilled) {
+    for (const game of results) {
+      const existing = hits.get(game.appid);
+      hits.set(game.appid, { ...game, ...existing, icon: existing?.icon ?? game.icon });
+    }
+  }
+  return [...hits.values()];
+}
+
 export async function searchSteamGames(input: string, options: SteamGameSearchOptions = {}) {
   const query = cleanSteamGameQuery(input);
   if (!query) return [];
 
-  const url = getSteamGameSearchUrl(query, options.cacheKey);
-  const games = await fetchSteamGames(url);
+  const games = await searchSteamGameHits(query);
   return games.slice(0, options.maxResults ?? 20).map(toSteamGameSearchResult);
 }
 

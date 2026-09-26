@@ -389,12 +389,10 @@
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.102.5",
-    "@raycast/utils": "^2.2.1",
+    "@raycast/api": "^2.5.2",
+    "@raycast/utils": "^2.3.2",
     "date-fns": "^4.1.0",
-    "raycast-cross-extension": "^0.2.3",
-    "swr": "^2.3.6",
-    "turndown": "^7.2.1"
+    "raycast-cross-extension": "^0.2.3"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.0.0",

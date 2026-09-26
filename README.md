@@ -15,7 +15,7 @@ Notes:
 - While rare, you may hit the Steam API rate limit. If that's the case, just wait a few moments and try again.
 - Sometimes the Steam API sends a random language. There doesn't seem to be any logic to this. Just press escape and try again.
 - Sometimes games are removed from Steam yet still show in the API. To avoid extra network costs, the extension will just provide feedback that the game no longer exists.
-- Icons will only show if you own the game. Steam doesn't send the icons via the public api.
+- Search results show icons for the top matches Steam's own app search returns. Other results show an icon only if you own the game.
 
 ## Features
 

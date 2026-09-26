@@ -1,9 +1,9 @@
-import useSWR, { useSWRConfig } from "swr";
-import { fakeGameData, fakeGameDataSimpleMany, fakeGames, isFakeData } from "./fake";
-import { GameData, GameDataSimple, GameDataSimpleResponse, GameSimple } from "../types";
 import { getPreferenceValues, LocalStorage, openCommandPreferences } from "@raycast/api";
-import { showFailureToast } from "@raycast/utils";
-import { fetchSteamGameData, fetchSteamGames, getSteamGameDetailsUrl, getSteamGameSearchUrl } from "./games";
+import { showFailureToast, useCachedPromise, usePromise } from "@raycast/utils";
+import { useState } from "react";
+import { fakeGameData, fakeGameDataSimpleMany, fakeGames, isFakeData } from "./fake";
+import { GameData, GameDataSimple, GameDataSimpleResponse } from "../types";
+import { fetchSteamGames, getSteamGameData, getSteamGameSearchUrl, searchSteamGameHits, SteamGameHit } from "./games";
 import { steamFetch } from "./http";
 
 async function fetcherWithAuth(url: string) {
@@ -31,69 +31,43 @@ async function fetcherWithAuth(url: string) {
   return gamesResponse?.response?.games ?? [];
 }
 
-export const useGamesSearch = ({ term = "", cacheKey = 0, execute = true }) => {
-  const { data, error, isValidating } = useSWR<GameSimple[]>(
-    execute ? getSteamGameSearchUrl(term, cacheKey) : null,
-    isFakeData ? () => fakeGames(30) : fetchSteamGames,
-  );
-  return {
-    data,
-    isLoading: !data && !error && execute,
-    isValidating,
-    isError: error,
-  };
+const fakeSearch = async () => fakeGames(30) as SteamGameHit[];
+
+export const useGamesSearch = ({ term = "", execute = true }) => {
+  const { data, isLoading, error } = useCachedPromise(isFakeData ? fakeSearch : searchSteamGameHits, [term], {
+    execute: execute && term.length > 0,
+    keepPreviousData: true,
+  });
+  return { data, isLoading, isError: error };
 };
 
-export const useGameData = <T>({ appid = 0, execute = true }) => {
-  const { cache } = useSWRConfig();
-  const key = {
-    appid,
-    url: getSteamGameDetailsUrl(appid),
-  };
-  const { data, error, isValidating } = useSWR<GameData | undefined>(
-    execute && appid ? key : null,
-    isFakeData ? () => fakeGameData(30) : fetchSteamGameData,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      refreshInterval: 600_000, // 10 minutes
-      dedupingInterval: 600_000, // 10 minutes
-    },
+export const useRandomGames = () => {
+  const [cacheKey] = useState(() => Math.floor(Math.random() * 10000) + 1);
+  const { data, isLoading } = usePromise(
+    isFakeData ? fakeSearch : (key: number) => fetchSteamGames(getSteamGameSearchUrl("", key)),
+    [cacheKey],
   );
+  return { data, isLoading };
+};
 
-  // Slightly hacky way to grab something from swr cache
-  // If swr changes their serialization implimentation, this will break (gracefully)
-  const cacheKey = `#url:"${key.url}",appid:${appid},`;
-  if (!data && cache.get(cacheKey) && !error) {
-    return { data: cache.get(cacheKey) as T };
-  }
+// Callers render their own not-found and error states, so the hook's failure toast would double them
+const silent = () => undefined;
 
-  return {
-    data: data as T,
-    isLoading: !data && !error,
-    isValidating,
-    isError: error,
-  };
+export const useGameData = ({ appid = 0, execute = true }) => {
+  const { data, isLoading, error } = useCachedPromise(
+    isFakeData ? async () => fakeGameData(30) : getSteamGameData,
+    [appid],
+    { execute: execute && appid > 0, onError: silent },
+  );
+  return { data: data as GameData | undefined, isLoading, isError: error };
 };
 
 export const useRecentlyPlayedGames = () => useGetOwnedGames("GetRecentlyPlayedGames");
 export const useMyGames = () => useGetOwnedGames("GetOwnedGames");
 const useGetOwnedGames = (type: string) => {
-  const { data, error, isValidating } = useSWR<GameDataSimple[]>(
-    `https://api.steampowered.com/IPlayerService/${type}/v1/?format=json&include_appinfo=1`,
-    isFakeData ? () => fakeGameDataSimpleMany(30) : fetcherWithAuth,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      refreshInterval: 600_000, // 10 minutes
-      dedupingInterval: 600_000, // 10 minutes
-    },
+  const { data, isLoading, error } = useCachedPromise(
+    isFakeData ? async () => fakeGameDataSimpleMany(30) : fetcherWithAuth,
+    [`https://api.steampowered.com/IPlayerService/${type}/v1/?format=json&include_appinfo=1`],
   );
-
-  return {
-    data: data,
-    isLoading: !data && !error,
-    isValidating,
-    isError: error,
-  };
+  return { data: data as GameDataSimple[] | undefined, isLoading, isError: error };
 };

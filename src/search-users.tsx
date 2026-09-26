@@ -1,6 +1,6 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
-import useSWR from "swr";
 import { SteamUserDetails } from "./components/SteamUserDetails";
 import { NoWebApiKey } from "./errors";
 import {
@@ -17,14 +17,11 @@ export default function Command() {
   const hasApiKey = hasSteamWebApiKey();
   const query = cleanSteamUserQuery(search);
   const shouldSearch = hasApiKey && query.length >= 2;
-  const { data, error, isLoading } = useSWR(
-    shouldSearch ? ["steam-user-search", query] : null,
-    ([, term]) => searchSteamUsers(term, { maxResults: 20 }),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      keepPreviousData: true,
-    },
+  const { data, error, isLoading } = useCachedPromise(
+    (term: string) => searchSteamUsers(term, { maxResults: 20 }),
+    [query],
+    // The empty view explains the failure, so skip the default toast
+    { execute: shouldSearch, keepPreviousData: true, onError: () => undefined },
   );
 
   if (!hasApiKey) {

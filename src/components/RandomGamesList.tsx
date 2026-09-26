@@ -1,18 +1,13 @@
 import { List } from "@raycast/api";
-import { useEffect, useState } from "react";
-import { useGamesSearch, useMyGames } from "../lib/fetcher";
+import { useState } from "react";
+import { useMyGames, useRandomGames } from "../lib/fetcher";
+import { appidFromItemId } from "../lib/util";
 import { DynamicGameListItem } from "./ListItems";
 
 export const RandomGamesList = () => {
-  const [cacheKey, setCacheKey] = useState(0);
-  const { data: games, isLoading } = useGamesSearch({ cacheKey, execute: cacheKey > 0 });
+  const { data: games, isLoading } = useRandomGames();
   const [hovered, setHovered] = useState(0);
   const { data: myGames } = useMyGames();
-
-  useEffect(() => {
-    if (cacheKey) return;
-    setCacheKey(Math.floor(Math.random() * 10000));
-  }, [cacheKey]);
 
   return (
     <List
@@ -20,7 +15,7 @@ export const RandomGamesList = () => {
       filtering={false}
       isLoading={isLoading}
       searchBarPlaceholder=""
-      onSelectionChange={(id) => setHovered(Number(id ?? 0))}
+      onSelectionChange={(id) => setHovered(appidFromItemId(id))}
     >
       {games?.map((game) => (
         <DynamicGameListItem

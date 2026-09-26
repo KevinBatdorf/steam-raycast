@@ -16,3 +16,6 @@ export const reverse = (array: GameDataSimple[]) => {
   }
   return output;
 };
+
+// List item ids are the list's context name followed by the appid
+export const appidFromItemId = (id?: string | null) => Number(id?.replace(/\D/g, "") || 0);

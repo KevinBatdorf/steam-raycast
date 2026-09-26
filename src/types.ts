@@ -1,6 +1,7 @@
 export type GameSimple = {
   appid?: number;
   name?: string;
+  icon?: string;
 };
 export type GameDataResponse = {
   [appid: number]: {

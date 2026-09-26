@@ -1,18 +1,19 @@
 import { List } from "@raycast/api";
 import { useState } from "react";
 import { useGamesSearch, useMyGames } from "../lib/fetcher";
+import { appidFromItemId } from "../lib/util";
 import { DynamicGameListItem } from "./ListItems";
 import { GameSimple } from "../types";
 
 export const Search = () => {
   const [search, setSearch] = useState("");
   const [hovered, setHovered] = useState(0);
-  const { data: searchedGames } = useGamesSearch({ term: search, execute: search.length > 0 });
+  const { data: searchedGames, isLoading } = useGamesSearch({ term: search, execute: search.length > 0 });
   return (
     <List
-      isLoading={Boolean(search && !searchedGames?.length)}
+      isLoading={isLoading}
       onSearchTextChange={setSearch}
-      onSelectionChange={(id) => setHovered(Number(id ?? 0))}
+      onSelectionChange={(id) => setHovered(appidFromItemId(id))}
       throttle
       searchBarPlaceholder="Search for a game by title..."
     >
