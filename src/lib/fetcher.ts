@@ -1,20 +1,20 @@
 import useSWR, { useSWRConfig } from "swr";
 import { fakeGameData, fakeGameDataSimpleMany, fakeGames, isFakeData } from "./fake";
 import { GameData, GameDataSimple, GameDataSimpleResponse, GameSimple } from "../types";
-import { getPreferenceValues, LocalStorage, openCommandPreferences, showToast, Toast } from "@raycast/api";
+import { getPreferenceValues, LocalStorage, openCommandPreferences } from "@raycast/api";
+import { showFailureToast } from "@raycast/utils";
 import { fetchSteamGameData, fetchSteamGames, getSteamGameDetailsUrl, getSteamGameSearchUrl } from "./games";
+import { steamFetch } from "./http";
 
 async function fetcherWithAuth(url: string) {
-  const { token, steamid } = getPreferenceValues();
-  if (!token && !steamid) return [];
-  const response = await fetch(url + `&key=${token.trim()}&steamid=${steamid.trim()}`);
+  const { token, steamid } = getPreferenceValues<Preferences>();
+  if (!token || !steamid) return [];
+  const response = await steamFetch(url + `&key=${token.trim()}&steamid=${steamid.trim()}`);
   if (response.status === 403) {
     // If the request fails to auth, stash it to check if they later updated it
     await LocalStorage.setItem("API_KEY_ERROR", token.trim() + steamid.trim());
-    showToast({
+    showFailureToast(new Error("Please check your API key."), {
       title: "403 Error",
-      message: "Please check your API key.",
-      style: Toast.Style.Failure,
       primaryAction: {
         title: "Open preferences",
         onAction: () => {

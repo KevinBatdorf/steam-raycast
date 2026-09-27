@@ -1,5 +1,11 @@
 # Steam Changelog
 
+## [Bug Fixes] - {PR_MERGE_DATE}
+
+- Fix an error when only one of Web API Key and Steam ID is set
+- Clear Recent History now clears only your recently viewed games
+- Report unexpected Steam network errors so they can be fixed
+
 ## [Fix Game Details] - {PR_MERGE_DATE}
 
 - Fix game details showing "Game not found" for every game

@@ -1,4 +1,5 @@
 import { GameData, GameDataResponse, GameSimple } from "../types";
+import { steamFetch } from "./http";
 
 export type SteamGameSummary = {
   appid: number;
@@ -100,7 +101,7 @@ export function getSteamAppIdFromInput(input: string) {
 }
 
 export async function fetchSteamGames(url: string) {
-  const response = await fetch(url);
+  const response = await steamFetch(url);
   if (!response.ok) {
     throw new SteamGameError(`${response.status} ${response.statusText}`, { status: response.status });
   }
@@ -110,7 +111,7 @@ export async function fetchSteamGames(url: string) {
 }
 
 export async function fetchSteamGameData({ url }: SteamGameDetailsRequest) {
-  const response = await fetch(url);
+  const response = await steamFetch(url);
 
   if (!response.ok) {
     throw new SteamGameError(`${response.status} ${response.statusText}`, { status: response.status });

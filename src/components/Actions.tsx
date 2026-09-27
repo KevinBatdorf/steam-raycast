@@ -49,7 +49,7 @@ export const DefaultActions = () => {
         icon={Icon.XMarkCircle}
         title="Clear Recent History"
         onAction={async () => {
-          await LocalStorage.clear();
+          await LocalStorage.removeItem("recently-viewed");
           await showToast({
             title: "Success. Reload to see changes",
             style: Toast.Style.Success,

@@ -1,7 +1,7 @@
 import { Action, ActionPanel, Color, Detail, getPreferenceValues, openCommandPreferences } from "@raycast/api";
 
 export const NoApiKey = () => {
-  const { token, steamid } = getPreferenceValues();
+  const { token, steamid } = getPreferenceValues<Preferences>();
   const markdown =
     "To access your games, you need to set your API key and Steam ID in the preferences.\n\nGrab an API key from Steam here: \n\n[https://steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey)\n\nTo find your Steam ID, visit this page and look toward the top just under your user name.\n\n[https://store.steampowered.com/account/](https://store.steampowered.com/account/)\n\n\nPress `Enter` to continue";
   return (
