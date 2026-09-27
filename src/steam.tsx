@@ -1,4 +1,14 @@
-import { Action, ActionPanel, Icon, List, LocalStorage, environment, openExtensionPreferences } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Icon,
+  List,
+  LocalStorage,
+  confirmAlert,
+  environment,
+  getPreferenceValues,
+  openExtensionPreferences,
+} from "@raycast/api";
 import { rm } from "fs/promises";
 import { join } from "path";
 import { useEffect, useState } from "react";
@@ -27,6 +37,22 @@ export default function Command() {
   });
   const [recentlyViewed, setRecentlyViewed] = useState<GameDataSimple[]>();
   const { data: myGames, isLoading: myGamesLoading } = useMyGames();
+
+  useEffect(() => {
+    if (getPreferenceValues<Preferences>().token?.trim()) return;
+    LocalStorage.getItem("key-notice-shown").then(async (shown) => {
+      if (shown) return;
+      await LocalStorage.setItem("key-notice-shown", true);
+      const openPreferences = await confirmAlert({
+        title: "Add a Steam Web API Key",
+        message:
+          "A future version of the Steam extension will need a Steam Web API key. Adding one now also makes search faster. You can get a key at steamcommunity.com/dev/apikey.",
+        primaryAction: { title: "Open Extension Preferences" },
+        dismissAction: { title: "Not Now" },
+      });
+      if (openPreferences) await openExtensionPreferences();
+    });
+  }, []);
 
   useEffect(() => {
     // Older versions kept an SWR cache here that nothing reads any more

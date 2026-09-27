@@ -4,7 +4,7 @@
 
 Search and view information about any game on steam, as well as games you own.
 
-Get an API token here (optional): https://steamcommunity.com/dev/apikey
+Get an API key here: https://steamcommunity.com/dev/apikey. It is optional for now, but a future version will require it.
 
 With a Web API key, search runs from a local list of every Steam game, which the extension downloads once and then keeps up to date. Without a key, search is powered by this public repo: https://github.com/KevinBatdorf/steam-api
 

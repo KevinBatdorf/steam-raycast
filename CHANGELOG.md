@@ -1,47 +1,19 @@
 # Steam Changelog
 
-## [Details and News] - {PR_MERGE_DATE}
-
-- Show game details beside search results with Show Details
-- Add a View News action for any game
-- Explain empty searches, empty libraries, and missing preferences instead of showing a blank list
-
-## [More AI Tools] - {PR_MERGE_DATE}
-
-- Add AI tools for your owned games, recently played games, and game news
-- Add AI tools to launch or install a game, each asking you to confirm first
-
-## [Local Search] - {PR_MERGE_DATE}
-
-- With a Web API Key, search runs from a local list of every Steam game, so results appear instantly
-- Add a Game List Refresh preference for how often that list checks Steam for new games
-
-## [Search Improvements] - {PR_MERGE_DATE}
-
-- Show game icons in search results, including games you don't own
-- Rank exact title matches first in search
-- Load release dates as you move through search and random results
-- Stop keeping an on-disk cache that grew with every game viewed
-- Update to Raycast API 2
-
-## [Remove AI Recommendation] - {PR_MERGE_DATE}
-
-- Remove the AI game recommendation from the main view, which ran an AI request every time the command opened. Ask Raycast AI with @steam instead
-
-## [Open in Steam] - {PR_MERGE_DATE}
-
-- Add an Open in Steam link to game details
-- Steam app actions now open Steam directly instead of your browser
-
-## [Bug Fixes] - {PR_MERGE_DATE}
-
-- Fix an error when only one of Web API Key and Steam ID is set
-- Clear Recent History now clears only your recently viewed games
-- Report unexpected Steam network errors so they can be fixed
-
-## [Fix Game Details] - {PR_MERGE_DATE}
+## [Local Search, New AI Tools, and Fixes] - {PR_MERGE_DATE}
 
 - Fix game details showing "Game not found" for every game
+- With a Web API Key, search runs from a local list of every Steam game, so results appear instantly. A new Game List Refresh preference sets how often it checks Steam for new games
+- Show game icons in search results, including games you don't own, and rank exact title matches first
+- Show game details beside search results with Show Details, and add a View News action to every game
+- Add AI tools for your owned games, recently played games, and game news, and tools to launch or install a game after you confirm
+- Add an Open in Steam link to game details, and open Steam directly from Steam actions instead of going through your browser
+- Tell users without a Web API Key, once, that a future version will require one
+- Remove the AI game recommendation from the main view, which ran an AI request every time the command opened
+- Fix an error when only one of Web API Key and Steam ID is set
+- Load release dates as you move through search results, and explain empty searches and libraries instead of showing a blank list
+- Clear Recent History now clears only your recently viewed games
+- Stop keeping an on-disk cache that grew with every game viewed, and update to Raycast API 2
 
 ## [New Feature] - 2026-06-29
 

@@ -1,7 +1,7 @@
-import { captureException } from "@raycast/api";
+import { captureException, getPreferenceValues } from "@raycast/api";
 import { GameData, GameDataResponse, GameSimple, SteamGameHit } from "../types";
 import { steamFetch } from "./http";
-import { isIndexReady, searchIndex } from "./search-index";
+import { indexAgeDays, isIndexReady, isIndexStale, searchIndex } from "./search-index";
 import { getOwnedGames } from "./library";
 
 export type SteamGameSummary = {
@@ -163,6 +163,17 @@ export async function searchSteamGameHits(term: string): Promise<SteamGameHit[]>
     }
   }
   return [...hits.values()];
+}
+
+export function localListWarning() {
+  try {
+    const { indexRefresh } = getPreferenceValues<Preferences>();
+    if (!isIndexReady() || !isIndexStale(Number(indexRefresh) || 1)) return undefined;
+    const days = Math.floor(indexAgeDays());
+    return `The local Steam game list is ${days} day${days === 1 ? "" : "s"} old, so recent releases may be missing. Opening Search Games in Raycast refreshes it.`;
+  } catch {
+    return undefined;
+  }
 }
 
 function searchLocal(query: string, limit: number) {

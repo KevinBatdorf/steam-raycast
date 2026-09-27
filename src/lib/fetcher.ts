@@ -3,6 +3,7 @@ import {
   getPreferenceValues,
   LocalStorage,
   openCommandPreferences,
+  openExtensionPreferences,
   showToast,
   Toast,
 } from "@raycast/api";
@@ -17,8 +18,8 @@ import {
   getSteamGameSearchUrl,
   searchSteamGameHits,
 } from "./games";
-import { steamFetch } from "./http";
-import { isIndexReady, isIndexStale, searchIndex, syncIndex } from "./search-index";
+import { steamFetch, SteamNetworkError } from "./http";
+import { IndexSyncError, isIndexReady, isIndexStale, searchIndex, syncIndex } from "./search-index";
 
 async function fetcherWithAuth(url: string) {
   const { token, steamid } = getPreferenceValues<Preferences>();
@@ -76,11 +77,17 @@ const useSearchIndex = () => {
         await (await toast)?.hide();
       })
       .catch(async (error: unknown) => {
+        // steamFetch already reported network failures and server errors
+        const reported = error instanceof SteamNetworkError || (error instanceof IndexSyncError && error.status >= 500);
+        if (!reported) captureException(error);
         const shown = await toast;
         if (!shown) return;
         shown.style = Toast.Style.Failure;
         shown.title = "Could not download the Steam game list";
         shown.message = error instanceof Error ? error.message : undefined;
+        if (error instanceof IndexSyncError && error.status < 500) {
+          shown.primaryAction = { title: "Open Extension Preferences", onAction: () => openExtensionPreferences() };
+        }
       });
   }, [key, indexRefresh]);
 

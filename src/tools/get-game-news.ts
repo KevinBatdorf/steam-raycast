@@ -1,4 +1,4 @@
-import { cleanSteamGameQuery, getSteamAppIdFromInput, searchSteamGames } from "../lib/games";
+import { cleanSteamGameQuery, getSteamAppIdFromInput, localListWarning, searchSteamGames } from "../lib/games";
 import { getGameNews, newsText } from "../lib/news";
 import { formatSteamTimestamp } from "../lib/users";
 
@@ -34,8 +34,14 @@ export default async function getGameNewsTool(input: Input) {
   } else if (query) {
     [game] = await searchSteamGames(query, { maxResults: 1 });
   }
+  const listWarning = !appid && query ? localListWarning() : undefined;
   if (!game) {
-    return { news: [], warnings: [query ? `No Steam game matched "${query}".` : "Name the game or give its app ID."] };
+    return {
+      news: [],
+      warnings: [query ? `No Steam game matched "${query}".` : "Name the game or give its app ID.", listWarning].filter(
+        (warning): warning is string => Boolean(warning),
+      ),
+    };
   }
 
   const count = Math.min(Math.max(input.count ?? 5, 1), 10);
@@ -49,6 +55,8 @@ export default async function getGameNewsTool(input: Input) {
       url: item.url,
       summary: newsText(item.contents),
     })),
-    warnings: items.length ? [] : ["Steam has no news for this game."],
+    warnings: [items.length ? undefined : "Steam has no news for this game.", listWarning].filter(
+      (warning): warning is string => Boolean(warning),
+    ),
   };
 }

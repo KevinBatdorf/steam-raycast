@@ -8,6 +8,7 @@ import { steamFetch } from "./http";
 const SCHEMA_VERSION = 2;
 const PAGE_SIZE = 50_000;
 const CANDIDATES = 1_000;
+const WRITE_CHUNK = 2_000;
 
 type AppListResponse = {
   response?: {
@@ -16,6 +17,15 @@ type AppListResponse = {
     last_appid?: number;
   };
 };
+
+export class IndexSyncError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
 
 let database: DatabaseSync | undefined;
 let syncing: Promise<void> | undefined;
@@ -91,8 +101,12 @@ export function isIndexReady() {
   }
 }
 
+export function indexAgeDays() {
+  return (Date.now() / 1000 - syncedAt()) / 86_400;
+}
+
 export function isIndexStale(maxAgeDays: number) {
-  return Date.now() / 1000 - syncedAt() > maxAgeDays * 86_400;
+  return indexAgeDays() > maxAgeDays;
 }
 
 export function syncIndex(key: string) {
@@ -122,23 +136,29 @@ async function runSync(key: string) {
 
     const response = await steamFetch(url);
     if (!response.ok) {
-      throw new Error(
+      throw new IndexSyncError(
         response.status === 401 || response.status === 403
           ? "Steam rejected the Web API Key"
           : `Could not download the Steam game list (${response.status})`,
+        response.status,
       );
     }
     const { response: page } = (await response.json()) as AppListResponse;
 
-    db().exec("BEGIN");
-    try {
-      for (const app of page?.apps ?? []) {
-        if (app.appid && app.name) upsert.run(app.appid, app.name, normalize(app.name));
+    const apps = page?.apps ?? [];
+    for (let start = 0; start < apps.length; start += WRITE_CHUNK) {
+      db().exec("BEGIN");
+      try {
+        for (const app of apps.slice(start, start + WRITE_CHUNK)) {
+          if (app.appid && app.name) upsert.run(app.appid, app.name, normalize(app.name));
+        }
+        db().exec("COMMIT");
+      } catch (error) {
+        db().exec("ROLLBACK");
+        throw error;
       }
-      db().exec("COMMIT");
-    } catch (error) {
-      db().exec("ROLLBACK");
-      throw error;
+      // Writes share a thread with the open list, so yield between chunks to keep it responsive
+      await new Promise((resolve) => setImmediate(resolve));
     }
 
     if (!page?.have_more_results || !page.last_appid) break;
