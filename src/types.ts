@@ -3,6 +3,11 @@ export type GameSimple = {
   name?: string;
   icon?: string;
 };
+export type SteamGameHit = {
+  appid: number;
+  name: string;
+  icon?: string;
+};
 export type GameDataResponse = {
   [appid: number]: {
     success?: boolean;

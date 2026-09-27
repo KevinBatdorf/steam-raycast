@@ -375,7 +375,7 @@
       "name": "token",
       "type": "password",
       "title": "Web API Key",
-      "description": "Add your Steam Web API key",
+      "description": "Add your Steam Web API key. With a key, search runs from a local list of every Steam game.",
       "placeholder": "Web API Key",
       "required": false
     },
@@ -386,6 +386,28 @@
       "description": "Add your Steam ID",
       "placeholder": "Steam ID",
       "required": false
+    },
+    {
+      "name": "indexRefresh",
+      "type": "dropdown",
+      "title": "Game List Refresh",
+      "description": "How often to check Steam for new and renamed games. Needs a Web API Key.",
+      "required": false,
+      "default": "1",
+      "data": [
+        {
+          "title": "Daily",
+          "value": "1"
+        },
+        {
+          "title": "Weekly",
+          "value": "7"
+        },
+        {
+          "title": "Monthly",
+          "value": "30"
+        }
+      ]
     }
   ],
   "dependencies": {

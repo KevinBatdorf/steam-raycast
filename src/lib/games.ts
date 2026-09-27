@@ -1,5 +1,7 @@
-import { GameData, GameDataResponse, GameSimple } from "../types";
+import { captureException } from "@raycast/api";
+import { GameData, GameDataResponse, GameSimple, SteamGameHit } from "../types";
 import { steamFetch } from "./http";
+import { isIndexReady, searchIndex } from "./search-index";
 
 export type SteamGameSummary = {
   appid: number;
@@ -27,12 +29,6 @@ export type SteamGameSearchResult = {
   appid: number;
   name: string;
   storeUrl: string;
-};
-
-export type SteamGameHit = {
-  appid: number;
-  name: string;
-  icon?: string;
 };
 
 type CommunityApp = {
@@ -141,7 +137,7 @@ export async function fetchSteamGameData({ url }: SteamGameDetailsRequest) {
   return entry.data;
 }
 
-async function fetchCommunityApps(term: string): Promise<SteamGameHit[]> {
+export async function fetchCommunityApps(term: string): Promise<SteamGameHit[]> {
   const response = await steamFetch(`${STEAM_COMMUNITY_BASE}/actions/SearchApps/${encodeURIComponent(term)}`);
   if (!response.ok) {
     throw new SteamGameError(`${response.status} ${response.statusText}`, { status: response.status });
@@ -168,12 +164,23 @@ export async function searchSteamGameHits(term: string): Promise<SteamGameHit[]>
   return [...hits.values()];
 }
 
+function searchLocal(query: string, limit: number) {
+  try {
+    return searchIndex(query, limit);
+  } catch (error) {
+    captureException(error);
+    return [];
+  }
+}
+
 export async function searchSteamGames(input: string, options: SteamGameSearchOptions = {}) {
   const query = cleanSteamGameQuery(input);
   if (!query) return [];
 
-  const games = await searchSteamGameHits(query);
-  return games.slice(0, options.maxResults ?? 20).map(toSteamGameSearchResult);
+  const maxResults = options.maxResults ?? 20;
+  const local = isIndexReady() ? searchLocal(query, maxResults) : [];
+  const games = local.length ? local : await searchSteamGameHits(query);
+  return games.slice(0, maxResults).map(toSteamGameSearchResult);
 }
 
 export async function getSteamGameData(appid: number) {
