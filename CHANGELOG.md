@@ -1,5 +1,10 @@
 # Steam Changelog
 
+## [More AI Tools] - {PR_MERGE_DATE}
+
+- Add AI tools for your owned games, recently played games, and game news
+- Add AI tools to launch or install a game, each asking you to confirm first
+
 ## [Local Search] - {PR_MERGE_DATE}
 
 - With a Web API Key, search runs from a local list of every Steam game, so results appear instantly

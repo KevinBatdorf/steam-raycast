@@ -50,10 +50,35 @@
       "name": "search-steam-users",
       "title": "Search Steam Users",
       "description": "Search Steam users by Steam ID, profile URL, vanity URL, or display name and return public profile information."
+    },
+    {
+      "name": "get-owned-games",
+      "title": "Get Owned Games",
+      "description": "List the games you own on Steam with playtime and when each was last played. Needs your Web API Key and Steam ID."
+    },
+    {
+      "name": "get-recently-played-games",
+      "title": "Get Recently Played Games",
+      "description": "List the games you played on Steam in the last two weeks. Needs your Web API Key and Steam ID."
+    },
+    {
+      "name": "get-game-news",
+      "title": "Get Game News",
+      "description": "Get recent announcements, patch notes, and press coverage for a Steam game."
+    },
+    {
+      "name": "launch-game",
+      "title": "Launch Game",
+      "description": "Launch a Steam game through the Steam client, after you confirm."
+    },
+    {
+      "name": "install-game",
+      "title": "Install Game",
+      "description": "Open Steam's install dialog for a game, after you confirm."
     }
   ],
   "ai": {
-    "instructions": "Use Search Steam Games for broad Steam game title searches and Get Steam Game Details when the user asks about one game or provides a Steam app ID/store URL. Use Search Steam Users when the user asks about a Steam user or profile. Prefer direct Steam IDs, profile URLs, and vanity URLs when present. Display-name user search can return multiple people, so do not claim an exact identity unless the result came from a Steam ID, profile URL, or vanity URL.",
+    "instructions": "Use Search Steam Games for broad Steam game title searches and Get Steam Game Details when the user asks about one game or provides a Steam app ID/store URL. Use Search Steam Users when the user asks about a Steam user or profile. Prefer direct Steam IDs, profile URLs, and vanity URLs when present. Display-name user search can return multiple people, so do not claim an exact identity unless the result came from a Steam ID, profile URL, or vanity URL. Use Get Owned Games for questions about the user's own library and playtime, and Get Recently Played Games for what they played lately. Use Get Game News for updates, patches, or news about a game. Only use Launch Game or Install Game when the user explicitly asks to play, launch, or install a game. Both need an app ID: get it from Search Steam Games or Get Owned Games first.",
     "evals": [
       {
         "input": "@steam find Stardew Valley",
@@ -68,6 +93,20 @@
               }
             ],
             "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
           }
         },
         "expected": [
@@ -131,6 +170,20 @@
               "shortDescription": "1998. HALF-LIFE sends a shock through the game industry with its combination of pounding action and continuous, immersive storytelling."
             },
             "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
           }
         },
         "expected": [
@@ -186,6 +239,20 @@
               }
             ],
             "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
           }
         },
         "expected": [
@@ -247,6 +314,20 @@
               }
             ],
             "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
           }
         },
         "expected": [
@@ -289,6 +370,20 @@
               }
             ],
             "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
           }
         },
         "expected": [
@@ -342,6 +437,20 @@
               }
             ],
             "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
           }
         },
         "expected": [
@@ -365,6 +474,318 @@
           },
           {
             "includes": "Alex"
+          }
+        ]
+      },
+      {
+        "input": "@steam how many hours have I put into Stardew Valley?",
+        "mocks": {
+          "get-owned-games": {
+            "totalOwned": 3,
+            "matched": 1,
+            "games": [
+              {
+                "appid": 413150,
+                "name": "Stardew Valley",
+                "playtime": "152h",
+                "playtimeMinutes": 9120,
+                "lastPlayed": "2026-09-20",
+                "storeUrl": "https://store.steampowered.com/app/413150"
+              }
+            ],
+            "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
+          }
+        },
+        "expected": [
+          {
+            "callsTool": "get-owned-games"
+          },
+          {
+            "includes": "152"
+          },
+          {
+            "not": {
+              "callsTool": "launch-game"
+            }
+          }
+        ]
+      },
+      {
+        "input": "@steam what have I been playing lately?",
+        "mocks": {
+          "get-recently-played-games": {
+            "games": [
+              {
+                "appid": 1145360,
+                "name": "Hades",
+                "lastTwoWeeks": "9h",
+                "total": "61h",
+                "storeUrl": "https://store.steampowered.com/app/1145360"
+              },
+              {
+                "appid": 2379780,
+                "name": "Balatro",
+                "lastTwoWeeks": "3h",
+                "total": "40h",
+                "storeUrl": "https://store.steampowered.com/app/2379780"
+              }
+            ],
+            "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
+          }
+        },
+        "expected": [
+          {
+            "callsTool": "get-recently-played-games"
+          },
+          {
+            "includes": "Hades"
+          },
+          {
+            "includes": "Balatro"
+          }
+        ]
+      },
+      {
+        "input": "@steam any recent patch notes for Balatro?",
+        "mocks": {
+          "get-game-news": {
+            "game": {
+              "appid": 2379780,
+              "name": "Balatro"
+            },
+            "news": [
+              {
+                "title": "Balatro 1.1.0 Update",
+                "date": "2026-09-10",
+                "source": "Community Announcements",
+                "url": "https://store.steampowered.com/news/app/2379780",
+                "summary": "New jokers, a new deck, and balance changes."
+              }
+            ],
+            "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-game-news",
+              "arguments": {
+                "query": [
+                  {
+                    "includes": "Balatro"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "includes": "1.1.0"
+          }
+        ]
+      },
+      {
+        "input": "@steam launch Hades",
+        "mocks": {
+          "launch-game": {
+            "game": {
+              "appid": 1145360,
+              "name": "Hades"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
+          },
+          "search-steam-games": {
+            "query": "Hades",
+            "results": [
+              {
+                "appid": 1145360,
+                "name": "Hades",
+                "storeUrl": "https://store.steampowered.com/app/1145360"
+              }
+            ],
+            "warnings": []
+          }
+        },
+        "expected": [
+          {
+            "callsTool": "search-steam-games"
+          },
+          {
+            "callsTool": "launch-game"
+          },
+          {
+            "not": {
+              "callsTool": "install-game"
+            }
+          }
+        ]
+      },
+      {
+        "input": "@steam install Terraria for me",
+        "mocks": {
+          "install-game": {
+            "game": {
+              "appid": 105600,
+              "name": "Terraria"
+            },
+            "opened": true
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "search-steam-games": {
+            "query": "Terraria",
+            "results": [
+              {
+                "appid": 105600,
+                "name": "Terraria",
+                "storeUrl": "https://store.steampowered.com/app/105600"
+              }
+            ],
+            "warnings": []
+          }
+        },
+        "expected": [
+          {
+            "callsTool": "search-steam-games"
+          },
+          {
+            "callsTool": "install-game"
+          },
+          {
+            "not": {
+              "callsTool": "launch-game"
+            }
+          }
+        ]
+      },
+      {
+        "input": "@steam is Hades any good?",
+        "usedAsExample": false,
+        "mocks": {
+          "search-steam-games": {
+            "query": "Hades",
+            "results": [
+              {
+                "appid": 1145360,
+                "name": "Hades",
+                "storeUrl": "https://store.steampowered.com/app/1145360"
+              }
+            ],
+            "warnings": []
+          },
+          "get-steam-game-details": {
+            "query": "Hades",
+            "match": {
+              "appid": 1145360,
+              "name": "Hades",
+              "storeUrl": "https://store.steampowered.com/app/1145360",
+              "matchType": "search-result"
+            },
+            "game": {
+              "appid": 1145360,
+              "name": "Hades",
+              "type": "game",
+              "storeUrl": "https://store.steampowered.com/app/1145360",
+              "developers": [
+                "Supergiant Games"
+              ],
+              "publishers": [
+                "Supergiant Games"
+              ],
+              "platforms": [
+                "windows",
+                "mac"
+              ],
+              "genres": [
+                "Action",
+                "Indie",
+                "RPG"
+              ],
+              "categories": [
+                "Single-player"
+              ],
+              "metacriticScore": 93
+            },
+            "warnings": []
+          },
+          "launch-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Launch"
+            },
+            "opened": true
+          },
+          "install-game": {
+            "game": {
+              "appid": 0,
+              "name": "Unexpected Install"
+            },
+            "opened": true
+          }
+        },
+        "expected": [
+          {
+            "not": {
+              "callsTool": "launch-game"
+            }
+          },
+          {
+            "not": {
+              "callsTool": "install-game"
+            }
           }
         ]
       }
