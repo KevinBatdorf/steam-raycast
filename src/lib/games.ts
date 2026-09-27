@@ -109,7 +109,7 @@ export async function fetchSteamGames(url: string) {
   return games?.filter(hasAppId).map((game) => ({ appid: game.appid, name: game.name })) ?? [];
 }
 
-export async function fetchSteamGameData({ appid, url }: SteamGameDetailsRequest) {
+export async function fetchSteamGameData({ url }: SteamGameDetailsRequest) {
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -117,11 +117,13 @@ export async function fetchSteamGameData({ appid, url }: SteamGameDetailsRequest
   }
 
   const gameData = (await response.json()) as GameDataResponse;
-  if (!gameData?.[appid]?.success || !gameData?.[appid]?.data) {
+  // Steam can key the reply by a related app's id, and only one app is ever requested
+  const [entry] = Object.values(gameData ?? {});
+  if (!entry?.success || !entry.data) {
     throw new SteamGameError("Game not found", { status: 404 });
   }
 
-  return gameData[appid].data;
+  return entry.data;
 }
 
 export async function searchSteamGames(input: string, options: SteamGameSearchOptions = {}) {
