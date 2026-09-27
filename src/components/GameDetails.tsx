@@ -3,11 +3,12 @@ import { showFailureToast } from "@raycast/utils";
 import { useEffect, useRef } from "react";
 import { useGameData } from "../lib/fetcher";
 import { useIsLoggedIn } from "../lib/hooks";
-import { GameData, GameDataSimple, GameSimple } from "../types";
+import { SteamGameError } from "../lib/games";
+import { GameDataSimple, GameSimple } from "../types";
 import { LaunchActions } from "./Actions";
 
 export const GameDetails = ({ game }: { game: GameSimple | GameDataSimple }) => {
-  const { data: gameData, isError: error } = useGameData<GameData>({ appid: game.appid });
+  const { data: gameData, isLoading, isError: error } = useGameData({ appid: game.appid });
   const once = useRef(false);
   const isLoggedIn = useIsLoggedIn();
 
@@ -23,7 +24,7 @@ ${gameData.short_description}
   // To do more here we would need an html to md converter
 
   useEffect(() => {
-    if (error?.status === 404 && !once.current) {
+    if (error instanceof SteamGameError && error.status === 404 && !once.current) {
       once.current = true;
       showFailureToast(error, { title: "Error" });
     }
@@ -42,7 +43,7 @@ ${gameData.short_description}
 
   return (
     <Detail
-      isLoading={!gameData}
+      isLoading={isLoading}
       navigationTitle={gameData?.name}
       markdown={error ? error?.message : markdown}
       actions={
@@ -70,12 +71,12 @@ ${gameData.short_description}
                 target={gameData.metacritic.url}
               />
             ) : null}
-            {gameData?.developers?.length > 0 ? (
+            {gameData?.developers?.length ? (
               <Detail.Metadata.TagList title="Developers">
                 <Detail.Metadata.TagList.Item color={"#67c0f4"} text={gameData?.developers[0]} />
               </Detail.Metadata.TagList>
             ) : null}
-            {gameData?.categories?.length > 0 ? (
+            {gameData?.categories?.length ? (
               <>
                 <Detail.Metadata.Separator />
                 <Detail.Metadata.TagList title="Categories">

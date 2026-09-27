@@ -1,5 +1,13 @@
 # Steam Changelog
 
+## [Search Improvements] - {PR_MERGE_DATE}
+
+- Show game icons in search results, including games you don't own
+- Rank exact title matches first in search
+- Load release dates as you move through search and random results
+- Stop keeping an on-disk cache that grew with every game viewed
+- Update to Raycast API 2
+
 ## [Remove AI Recommendation] - {PR_MERGE_DATE}
 
 - Remove the AI game recommendation from the main view, which ran an AI request every time the command opened. Ask Raycast AI with @steam instead
