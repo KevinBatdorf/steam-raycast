@@ -1,5 +1,10 @@
 # Steam Changelog
 
+## [Open in Steam] - {PR_MERGE_DATE}
+
+- Add an Open in Steam link to game details
+- Steam app actions now open Steam directly instead of your browser
+
 ## [Bug Fixes] - {PR_MERGE_DATE}
 
 - Fix an error when only one of Web API Key and Steam ID is set

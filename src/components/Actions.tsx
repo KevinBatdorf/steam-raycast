@@ -107,10 +107,10 @@ export const LaunchActions = ({ name = "", appid = 0 }) => {
           });
         }}
       />
-      <Action.OpenInBrowser icon={Icon.Window} title="View in Steam" url={`steam://nav/games/details/${appid}`} />
-      <Action.OpenInBrowser icon={Icon.Window} title="Open Store Page in Steam" url={`steam://store/${appid}`} />
-      <Action.OpenInBrowser icon={Icon.ArrowRight} title="Launch Game" url={`steam://rungameid/${appid}`} />
-      <Action.OpenInBrowser icon={Icon.Download} title="Install Game" url={`steam://install/${appid}`} />
+      <Action.Open icon={Icon.Window} title="View in Steam" target={`steam://nav/games/details/${appid}`} />
+      <Action.Open icon={Icon.Window} title="Open Store Page in Steam" target={`steam://store/${appid}`} />
+      <Action.Open icon={Icon.ArrowRight} title="Launch Game" target={`steam://rungameid/${appid}`} />
+      <Action.Open icon={Icon.Download} title="Install Game" target={`steam://install/${appid}`} />
     </ActionPanel.Section>
   );
 };
