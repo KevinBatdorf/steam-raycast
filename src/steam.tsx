@@ -45,8 +45,7 @@ export default function Command() {
       await LocalStorage.setItem("key-notice-shown", true);
       const openPreferences = await confirmAlert({
         title: "Add a Steam Web API Key",
-        message:
-          "A future version of the Steam extension will need a Steam Web API key. Adding one now also makes search faster. You can get a key at steamcommunity.com/dev/apikey.",
+        message: "A future version will require a Steam Web API key. Adding one now also makes search faster.",
         primaryAction: { title: "Open Extension Preferences" },
         dismissAction: { title: "Not Now" },
       });

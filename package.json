@@ -796,7 +796,7 @@
       "name": "token",
       "type": "password",
       "title": "Web API Key",
-      "description": "Your Steam Web API key, from steamcommunity.com/dev/apikey. With a key, search runs from a local list of every Steam game. A future version will require it.",
+      "description": "Your Steam Web API key",
       "placeholder": "Web API Key",
       "required": false
     },
@@ -812,7 +812,7 @@
       "name": "indexRefresh",
       "type": "dropdown",
       "title": "Game List Refresh",
-      "description": "How often to check Steam for new and renamed games. Needs a Web API Key.",
+      "description": "How often to refresh the game list",
       "required": false,
       "default": "1",
       "data": [
