@@ -41,12 +41,12 @@ export default function Command() {
   useEffect(() => {
     if (getPreferenceValues<Preferences>().token?.trim()) return;
     LocalStorage.getItem("key-notice-shown").then(async (shown) => {
-      if (shown) return;
+      // Dev builds show it on every open so the message can be checked without resetting storage
+      if (shown && !environment.isDevelopment) return;
       await LocalStorage.setItem("key-notice-shown", true);
       const openPreferences = await confirmAlert({
         title: "Add a Steam Web API Key",
-        message:
-          "A future version of the Steam extension will need a Steam Web API key. Adding one now also makes search faster. You can get a key at steamcommunity.com/dev/apikey.",
+        message: "A future version will require a Steam Web API key. Adding one now also makes search faster.",
         primaryAction: { title: "Open Extension Preferences" },
         dismissAction: { title: "Not Now" },
       });
