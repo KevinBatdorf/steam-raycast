@@ -21,7 +21,8 @@ Notes:
 
 - Search all games on Steam
 - Search only your games
-- View details about a game
+- View details about a game, or show them beside search results
+- Read a game's news and patch notes
 - Filter your search
 - Browse SteamGridDB images (requires [SteamGridDB](https://raycast.com/litomore/steamgriddb) extension)
 - Browse ProtonDB scores (requires [ProtonDB](https://raycast.com/litomore/protondb) extension)

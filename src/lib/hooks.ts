@@ -1,4 +1,5 @@
 import { getPreferenceValues, LocalStorage } from "@raycast/api";
+import { useCachedState } from "@raycast/utils";
 import { useEffect, useState } from "react";
 
 export const useIsLoggedIn = () => {
@@ -15,4 +16,9 @@ export const useIsLoggedIn = () => {
     }
   }, [token, steamid]);
   return loggedIn;
+};
+
+export const useShowingDetail = () => {
+  const [showingDetail, setShowingDetail] = useCachedState("showing-detail", false);
+  return { showingDetail, toggleDetail: () => setShowingDetail((current) => !current) };
 };

@@ -1,5 +1,5 @@
-import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
-import { GameDataSimple, GameSimple } from "../types";
+import { Action, ActionPanel, Color, Icon, Keyboard, List } from "@raycast/api";
+import { GameData, GameDataSimple, GameSimple } from "../types";
 import { DefaultActions, LaunchActions } from "./Actions";
 import { GameDetails } from "./GameDetails";
 import { humanTime } from "../lib/util";
@@ -10,11 +10,15 @@ export const DynamicGameListItem = ({
   context,
   ready,
   myGames = [],
+  showingDetail = false,
+  onToggleDetail,
 }: {
   game: GameSimple;
   context: "recent" | "recently-viewed" | "random" | "Search";
   ready: boolean;
   myGames?: GameDataSimple[];
+  showingDetail?: boolean;
+  onToggleDetail?: () => void;
 }) => {
   const { data: gameData, isError: error } = useGameData({ appid: game.appid, execute: ready });
   const owned = myGames.find((g) => g.appid === game.appid);
@@ -32,7 +36,8 @@ export const DynamicGameListItem = ({
       subtitle={gameData?.type === "game" ? undefined : gameData?.type}
       id={context + (game?.appid ? game.appid.toString() : "")}
       icon={image ? { source: image } : genericIcon}
-      accessories={[{ text: error ? "Game not found" : gameData?.release_date?.date }]}
+      accessories={showingDetail ? undefined : [{ text: error ? "Game not found" : gameData?.release_date?.date }]}
+      detail={showingDetail ? <GameListDetail gameData={gameData} notFound={Boolean(error)} /> : undefined}
       actions={
         <ActionPanel>
           <Action.Push
@@ -40,6 +45,14 @@ export const DynamicGameListItem = ({
             title="View Game Details"
             target={<GameDetails game={{ appid: game.appid, name: game.name, icon: game.icon }} />}
           />
+          {onToggleDetail ? (
+            <Action
+              icon={Icon.AppWindowSidebarRight}
+              title={showingDetail ? "Hide Details" : "Show Details"}
+              shortcut={Keyboard.Shortcut.Common.ToggleQuickLook}
+              onAction={onToggleDetail}
+            />
+          ) : null}
           <LaunchActions name={game.name} appid={game?.appid} />
           <DefaultActions />
         </ActionPanel>
@@ -47,6 +60,46 @@ export const DynamicGameListItem = ({
     />
   );
 };
+
+const GameListDetail = ({ gameData, notFound }: { gameData?: GameData; notFound: boolean }) => (
+  <List.Item.Detail
+    isLoading={!gameData && !notFound}
+    markdown={
+      notFound
+        ? "Steam has no store page for this game."
+        : gameData
+          ? `![](${gameData.header_image})\n\n${gameData.short_description}`
+          : undefined
+    }
+    metadata={
+      gameData ? (
+        <List.Item.Detail.Metadata>
+          {gameData.price_overview ? (
+            <List.Item.Detail.Metadata.Label title="Price" text={gameData.price_overview.final_formatted} />
+          ) : gameData.is_free ? (
+            <List.Item.Detail.Metadata.Label title="Price" text="Free" />
+          ) : null}
+          {gameData.release_date?.date ? (
+            <List.Item.Detail.Metadata.Label title="Release Date" text={gameData.release_date.date} />
+          ) : null}
+          {gameData.developers?.length ? (
+            <List.Item.Detail.Metadata.Label title="Developer" text={gameData.developers.join(", ")} />
+          ) : null}
+          {gameData.genres?.length ? (
+            <List.Item.Detail.Metadata.TagList title="Genres">
+              {gameData.genres.slice(0, 4).map((genre) => (
+                <List.Item.Detail.Metadata.TagList.Item key={genre.id} text={genre.description} />
+              ))}
+            </List.Item.Detail.Metadata.TagList>
+          ) : null}
+          {gameData.metacritic?.score ? (
+            <List.Item.Detail.Metadata.Label title="Metacritic" text={String(gameData.metacritic.score)} />
+          ) : null}
+        </List.Item.Detail.Metadata>
+      ) : undefined
+    }
+  />
+);
 
 export const MyGamesListType = ({ game }: { game: GameDataSimple }) => (
   <List.Item

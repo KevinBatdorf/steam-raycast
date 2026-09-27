@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Icon, List, LocalStorage, environment } from "@raycast/api";
+import { Action, ActionPanel, Icon, List, LocalStorage, environment, openExtensionPreferences } from "@raycast/api";
 import { rm } from "fs/promises";
 import { join } from "path";
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import { MyGamesListType, DynamicGameListItem } from "./components/ListItems";
 import { MyGames } from "./components/MyGames";
 import { Search, SearchList } from "./components/Search";
 import { DefaultActions } from "./components/Actions";
-import { useIsLoggedIn } from "./lib/hooks";
+import { useIsLoggedIn, useShowingDetail } from "./lib/hooks";
 import { GameDataSimple } from "./types";
 
 export default function Command() {
@@ -16,7 +16,12 @@ export default function Command() {
   const [hovered, setHovered] = useState(0);
   const isLoggedIn = useIsLoggedIn();
   const { data: recentlyPlayed, isLoading: recentlyPlayedLoading } = useRecentlyPlayedGames();
-  const { data: searchedGames, isLoading: searchLoading } = useGamesSearch({
+  const { showingDetail, toggleDetail } = useShowingDetail();
+  const {
+    data: searchedGames,
+    isLoading: searchLoading,
+    isError: searchError,
+  } = useGamesSearch({
     term: search,
     execute: search.length > 0,
   });
@@ -50,15 +55,36 @@ export default function Command() {
   return (
     <List
       isLoading={loading()}
+      isShowingDetail={showingDetail && Boolean(search) && Boolean(searchedGames?.length)}
       onSearchTextChange={setSearch}
       onSelectionChange={(id) => setHovered(appidFromItemId(id))}
       throttle
       searchBarPlaceholder="Search for a game by title..."
     >
       {search ? (
-        <SearchList searchedGames={searchedGames} hovered={hovered} />
+        <SearchList
+          search={search}
+          searchedGames={searchedGames}
+          isLoading={searchLoading}
+          error={searchError}
+          hovered={hovered}
+          showingDetail={showingDetail}
+          onToggleDetail={toggleDetail}
+        />
       ) : (
         <>
+          {!isLoggedIn && !recentlyViewed?.length ? (
+            <List.EmptyView
+              icon={Icon.GameController}
+              title="Search Steam Games"
+              description="Type a game title to search. Add your Web API Key and Steam ID in the preferences to see your own games."
+              actions={
+                <ActionPanel>
+                  <Action icon={Icon.Gear} title="Open Extension Preferences" onAction={openExtensionPreferences} />
+                </ActionPanel>
+              }
+            />
+          ) : null}
           {isLoggedIn ? (
             <List.Item
               title="My Games"

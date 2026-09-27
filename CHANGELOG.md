@@ -1,5 +1,11 @@
 # Steam Changelog
 
+## [Details and News] - {PR_MERGE_DATE}
+
+- Show game details beside search results with Show Details
+- Add a View News action for any game
+- Explain empty searches, empty libraries, and missing preferences instead of showing a blank list
+
 ## [More AI Tools] - {PR_MERGE_DATE}
 
 - Add AI tools for your owned games, recently played games, and game news

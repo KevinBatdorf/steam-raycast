@@ -1,4 +1,4 @@
-import { List } from "@raycast/api";
+import { Icon, List } from "@raycast/api";
 import { useMemo } from "react";
 import { NoApiKey } from "../errors";
 import { useMyGames } from "../lib/fetcher";
@@ -26,6 +26,13 @@ export const MyGames = ({ sortBy = "name", order = "asc", extraFilter = () => tr
   if (!isLoggedIn) return <NoApiKey />;
   return (
     <List navigationTitle="My Steam Account" isLoading={isLoading} searchBarPlaceholder="Search your games...">
+      {!isLoading && !gamesFiltered?.length ? (
+        <List.EmptyView
+          icon={Icon.GameController}
+          title="No Games Found"
+          description="Steam returned no games. Your profile's game details may be set to private."
+        />
+      ) : null}
       {gamesFiltered?.map((game) => (
         <MyGamesListType key={game.appid} game={game} />
       ))}
