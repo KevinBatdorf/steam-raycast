@@ -796,7 +796,7 @@
       "name": "token",
       "type": "password",
       "title": "Web API Key",
-      "description": "Your Steam Web API key",
+      "description": "Enables local mode for private, fast searches: https://steamcommunity.com/dev/apikey",
       "placeholder": "Web API Key",
       "required": false
     },
