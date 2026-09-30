@@ -6,12 +6,14 @@ const endpoint = (url: string | URL) => {
   return origin + pathname;
 };
 
+export const USER_AGENT = "raycast-steam (+https://www.raycast.com/KevinBatdorf/steam)";
+
 export class SteamNetworkError extends Error {}
 
 export async function steamFetch(url: string | URL, init?: RequestInit) {
   let response: Response;
   try {
-    response = await fetch(url, init);
+    response = await fetch(url, { ...init, headers: { "User-Agent": USER_AGENT, ...init?.headers } });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     captureException(new Error(`${message}: ${endpoint(url)}`));

@@ -3,7 +3,7 @@ import { showFailureToast } from "@raycast/utils";
 import { useEffect, useRef } from "react";
 import { useGameData } from "../lib/fetcher";
 import { useIsLoggedIn } from "../lib/hooks";
-import { SteamGameError } from "../lib/games";
+import { getHowLongToBeatUrl, getYouTubeUrl, SteamGameError } from "../lib/games";
 import { GameDataSimple, GameSimple } from "../types";
 import { LaunchActions } from "./Actions";
 
@@ -116,6 +116,12 @@ ${gameData.short_description}
             ) : null}
             {gameData?.steam_appid ? (
               <Detail.Metadata.Link title="" target={`steam://store/${gameData.steam_appid}`} text="Open in Steam" />
+            ) : null}
+            {gameData?.name ? (
+              <Detail.Metadata.Link title="" target={getHowLongToBeatUrl(gameData.name)} text="HowLongToBeat" />
+            ) : null}
+            {gameData?.name ? (
+              <Detail.Metadata.Link title="" target={getYouTubeUrl(gameData.name)} text="YouTube" />
             ) : null}
             {gameData?.website ? <Detail.Metadata.Link title="" text="Website" target={gameData.website} /> : null}
           </Detail.Metadata>

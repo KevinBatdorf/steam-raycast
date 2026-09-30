@@ -1,7 +1,8 @@
 import { captureException, getPreferenceValues } from "@raycast/api";
 import { GameData, GameDataResponse, GameSimple, SteamGameHit } from "../types";
 import { steamFetch } from "./http";
-import { indexAgeDays, isIndexReady, isIndexStale, searchIndex } from "./search-index";
+import { storeCountry } from "./region";
+import { indexAgeDays, isIndexReady, isIndexStale, refreshDays, searchIndex } from "./search-index";
 import { getOwnedGames } from "./library";
 
 export type SteamGameSummary = {
@@ -24,6 +25,8 @@ export type SteamGameSummary = {
   website?: string;
   headerImage?: string;
   shortDescription?: string;
+  howLongToBeatUrl: string;
+  youtubeUrl: string;
 };
 
 export type SteamGameSearchResult = {
@@ -83,6 +86,14 @@ export function getSteamGameStoreUrl(appid: number) {
   return `${STEAM_STORE_BASE}/app/${appid}`;
 }
 
+export function getHowLongToBeatUrl(name: string) {
+  return `https://howlongtobeat.com/?q=${encodeURIComponent(name)}`;
+}
+
+export function getYouTubeUrl(name: string) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${name} gameplay`)}`;
+}
+
 export function getSteamGameSearchUrl(term: string, cacheKey = 0) {
   const url = new URL(STEAM_SEARCH_BASE);
   url.searchParams.set("cacheKey", cacheKey.toString());
@@ -93,6 +104,7 @@ export function getSteamGameSearchUrl(term: string, cacheKey = 0) {
 export function getSteamGameDetailsUrl(appid: number) {
   const url = new URL(`${STEAM_STORE_BASE}/api/appdetails`);
   url.searchParams.set("appids", appid.toString());
+  url.searchParams.set("l", "english");
   return url.toString();
 }
 
@@ -167,10 +179,9 @@ export async function searchSteamGameHits(term: string): Promise<SteamGameHit[]>
 
 export function localListWarning() {
   try {
-    const { indexRefresh } = getPreferenceValues<Preferences>();
-    if (!isIndexReady() || !isIndexStale(Number(indexRefresh) || 1)) return undefined;
+    if (!isIndexReady() || !isIndexStale(refreshDays())) return undefined;
     const days = Math.floor(indexAgeDays());
-    return `The local Steam game list is ${days} day${days === 1 ? "" : "s"} old, so recent releases may be missing. Opening Search Games in Raycast refreshes it.`;
+    return `The local Steam game list is ${days} day${days === 1 ? "" : "s"} old, so recent releases may be missing. The user can update it with Refresh Game List in Search Games, or by asking you to.`;
   } catch {
     return undefined;
   }
@@ -190,16 +201,20 @@ export async function searchSteamGames(input: string, options: SteamGameSearchOp
   if (!query) return [];
 
   const maxResults = options.maxResults ?? 20;
-  const local = isIndexReady() ? searchLocal(query, maxResults) : [];
-  const games = local.length ? local : await searchSteamGameHits(query);
+  if (getPreferenceValues<Preferences>().token?.trim()) {
+    if (!isIndexReady()) {
+      throw new Error("The Steam game list hasn't downloaded yet. Open Search Games once to download it.");
+    }
+    return searchLocal(query, maxResults).map(toSteamGameSearchResult);
+  }
+  const games = await searchSteamGameHits(query);
   return games.slice(0, maxResults).map(toSteamGameSearchResult);
 }
 
 export async function getSteamGameData(appid: number) {
-  return fetchSteamGameData({
-    appid,
-    url: getSteamGameDetailsUrl(appid),
-  });
+  const url = new URL(getSteamGameDetailsUrl(appid));
+  url.searchParams.set("cc", await storeCountry());
+  return fetchSteamGameData({ appid, url: url.toString() });
 }
 
 export async function resolveSteamGame(input: string) {
@@ -256,6 +271,8 @@ export function toSteamGameSummary(gameData: GameData): SteamGameSummary {
     website: gameData.website,
     headerImage: gameData.header_image,
     shortDescription: cleanText(gameData.short_description),
+    howLongToBeatUrl: getHowLongToBeatUrl(gameData.name),
+    youtubeUrl: getYouTubeUrl(gameData.name),
   };
 }
 
