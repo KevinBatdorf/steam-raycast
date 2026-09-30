@@ -29,6 +29,3 @@ compiled_raycast_rust
 
 .env
 raycast-env.d.ts
-.nova
-.vscode
-dist
