@@ -1,12 +1,15 @@
-import { List } from "@raycast/api";
+import { Icon, List } from "@raycast/api";
+import { DownloadingEmptyView } from "./DownloadingList";
 import { useState } from "react";
-import { useMyGames, useRandomGames } from "../lib/fetcher";
+import { useMyGames, useRandomGames, useResultsWithDetails } from "../lib/fetcher";
 import { useShowingDetail } from "../lib/hooks";
 import { appidFromItemId } from "../lib/util";
 import { DynamicGameListItem } from "./ListItems";
 
 export const RandomGamesList = () => {
-  const { data: games, isLoading } = useRandomGames();
+  const { data: picked, isLoading: picking, listStatus } = useRandomGames();
+  const { games, loading: detailsLoading } = useResultsWithDetails(picked);
+  const isLoading = picking || detailsLoading;
   const [hovered, setHovered] = useState(0);
   const { data: myGames } = useMyGames();
   const { showingDetail, toggleDetail } = useShowingDetail();
@@ -20,6 +23,11 @@ export const RandomGamesList = () => {
       searchBarPlaceholder=""
       onSelectionChange={(id) => setHovered(appidFromItemId(id))}
     >
+      {listStatus ? (
+        <DownloadingEmptyView status={listStatus} />
+      ) : (
+        <List.EmptyView icon={Icon.Shuffle} title={isLoading ? "Picking Games…" : "No Games Found"} />
+      )}
       {games?.map((game) => (
         <DynamicGameListItem
           context="random"

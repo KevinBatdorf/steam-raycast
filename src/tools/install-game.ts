@@ -1,5 +1,6 @@
 import { open, Tool } from "@raycast/api";
 import { resolveSteamGameById } from "../lib/games";
+import { ensureSteamInstalled } from "../lib/steam-client";
 
 type Input = {
   /**
@@ -9,6 +10,7 @@ type Input = {
 };
 
 export const confirmation: Tool.Confirmation<Input> = async (input) => {
+  await ensureSteamInstalled();
   const game = await resolveSteamGameById(input.appid);
   return {
     message: `Install ${game.name} in Steam?`,
@@ -21,6 +23,7 @@ export const confirmation: Tool.Confirmation<Input> = async (input) => {
  * Use this only when the user asks to install or download a game.
  */
 export default async function installGameTool(input: Input) {
+  await ensureSteamInstalled();
   const game = await resolveSteamGameById(input.appid);
   await open(`steam://install/${game.appid}`);
   return { game, opened: true };

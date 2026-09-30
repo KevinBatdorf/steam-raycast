@@ -8,7 +8,7 @@ export const GameNews = ({ appid, name }: { appid: number; name?: string }) => {
 
   return (
     <List isLoading={isLoading} isShowingDetail navigationTitle={name ? `${name} News` : "Game News"}>
-      {!isLoading && !data?.length ? <List.EmptyView icon={Icon.Megaphone} title="No News for This Game" /> : null}
+      <List.EmptyView icon={Icon.Megaphone} title={isLoading ? "Loading News…" : "No News for This Game"} />
       {data?.map((item) => (
         <List.Item
           key={item.gid}

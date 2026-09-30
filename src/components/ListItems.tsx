@@ -2,8 +2,10 @@ import { Action, ActionPanel, Color, Icon, Keyboard, List } from "@raycast/api";
 import { GameData, GameDataSimple, GameSimple } from "../types";
 import { DefaultActions, LaunchActions } from "./Actions";
 import { GameDetails } from "./GameDetails";
-import { humanTime } from "../lib/util";
+import { itemId, playtimeText } from "../lib/util";
 import { useGameData } from "../lib/fetcher";
+import { cachedDetails } from "../lib/details";
+import { releaseTag } from "../lib/release-tag";
 
 export const DynamicGameListItem = ({
   game,
@@ -12,19 +14,21 @@ export const DynamicGameListItem = ({
   myGames = [],
   showingDetail = false,
   onToggleDetail,
+  search,
 }: {
   game: GameSimple;
-  context: "recent" | "recently-viewed" | "random" | "Search";
+  context: "recent" | "recently-viewed" | "random" | "similar" | "Search";
   ready: boolean;
   myGames?: GameDataSimple[];
   showingDetail?: boolean;
   onToggleDetail?: () => void;
+  search?: string;
 }) => {
-  const { data: gameData, isError: error } = useGameData({ appid: game.appid, execute: ready });
+  const { data: gameData, icon: detailIcon, isError: error } = useGameData({ appid: game.appid, execute: ready });
   const owned = myGames.find((g) => g.appid === game.appid);
   const image = owned?.img_icon_url
     ? `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${owned.img_icon_url}.jpg`
-    : game.icon;
+    : (game.icon ?? detailIcon);
   const genericIcon = {
     source: gameData?.type === "game" ? Icon.GameController : Icon.Circle,
     tintColor: error ? Color.Red : gameData ? Color.SecondaryText : undefined,
@@ -33,10 +37,17 @@ export const DynamicGameListItem = ({
   return (
     <List.Item
       title={game?.name ?? ""}
-      subtitle={gameData?.type === "game" ? undefined : gameData?.type}
-      id={context + (game?.appid ? game.appid.toString() : "")}
+      id={itemId(context, game?.appid, search)}
       icon={image ? { source: image } : genericIcon}
-      accessories={showingDetail ? undefined : [{ text: error ? "Game not found" : gameData?.release_date?.date }]}
+      accessories={
+        showingDetail
+          ? undefined
+          : [
+              ...(owned ? [{ tag: { value: "Owned", color: Color.Blue } }] : []),
+              ...(gameData?.type && gameData.type !== "game" ? [{ tag: gameData.type }] : []),
+              (error ? { text: "Game not found" } : releaseTag(gameData?.release_date?.date)) ?? {},
+            ]
+      }
       detail={showingDetail ? <GameListDetail gameData={gameData} notFound={Boolean(error)} /> : undefined}
       actions={
         <ActionPanel>
@@ -101,14 +112,18 @@ const GameListDetail = ({ gameData, notFound }: { gameData?: GameData; notFound:
   />
 );
 
-export const MyGamesListType = ({ game }: { game: GameDataSimple }) => (
+export const MyGamesListType = ({ game, id, detail }: { game: GameDataSimple; id?: string; detail?: string }) => (
   <List.Item
+    id={id}
     key={game.appid}
     title={game.name}
     icon={{
       source: `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`,
     }}
-    accessories={[{ text: game?.playtime_forever ? "Played for " + humanTime(game.playtime_forever) : undefined }]}
+    accessories={[
+      { text: detail ?? playtimeText(game.playtime_forever) },
+      releaseTag(cachedDetails(game.appid)?.data.release_date?.date) ?? {},
+    ]}
     actions={
       <ActionPanel>
         <Action.Push icon={Icon.Sidebar} title="View Game Details" target={<GameDetails game={game} />} />

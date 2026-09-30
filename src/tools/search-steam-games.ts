@@ -9,7 +9,7 @@ import {
 
 type Input = {
   /**
-   * Steam game title search text. Examples: "Portal 2", "Balatro", "Stardew Valley".
+   * Words from a game's title. Examples: "Portal 2", "Balatro", "Stardew Valley". Never genres, descriptions, or "like X" phrases, which match no titles.
    */
   query: string;
   /**
@@ -35,7 +35,7 @@ type Output = {
 
 /**
  * Search Steam games by title and return matching apps.
- * Use this when the user asks to find Steam games, compare search results, or identify a Steam app from a title.
+ * Use this to look up a game the user names, or to identify a Steam app from a title. It only matches titles, so for games like another game use Find Similar Games or Recommend Games instead.
  */
 export default async function searchSteamGamesTool(input: Input): Promise<Output> {
   const query = cleanSteamGameQuery(input.query);

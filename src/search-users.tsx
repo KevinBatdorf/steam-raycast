@@ -1,13 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { MIN_QUERY_LENGTH, SearchEmptyView } from "./components/SearchEmptyView";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
 import { SteamUserDetails } from "./components/SteamUserDetails";
-import { NoWebApiKey } from "./errors";
+import { WebApiKeyNotice } from "./errors";
+import { markKeyAccepted, markKeyRejected, useKeyRejected } from "./lib/hooks";
 import {
   cleanSteamUserQuery,
   getPersonaStateText,
   getProfileVisibilityText,
+  getSteamWebApiKey,
   hasSteamWebApiKey,
+  isRejectedKeyError,
   searchSteamUsers,
   SteamUserSearchResult,
 } from "./lib/users";
@@ -16,16 +20,24 @@ export default function Command() {
   const [search, setSearch] = useState("");
   const hasApiKey = hasSteamWebApiKey();
   const query = cleanSteamUserQuery(search);
-  const shouldSearch = hasApiKey && query.length >= 2;
+  const shouldSearch = hasApiKey && query.length >= MIN_QUERY_LENGTH;
+  const keyRejected = useKeyRejected();
   const { data, error, isLoading } = useCachedPromise(
     (term: string) => searchSteamUsers(term, { maxResults: 20 }),
     [query],
     // The empty view explains the failure, so skip the default toast
-    { execute: shouldSearch, keepPreviousData: true, onError: () => undefined },
+    {
+      execute: shouldSearch && !keyRejected,
+      keepPreviousData: true,
+      onError: (failure) => {
+        if (isRejectedKeyError(failure)) markKeyRejected(getSteamWebApiKey());
+      },
+      onData: () => markKeyAccepted(getSteamWebApiKey()),
+    },
   );
 
-  if (!hasApiKey) {
-    return <NoWebApiKey />;
+  if (!hasApiKey || keyRejected || isRejectedKeyError(error)) {
+    return <WebApiKeyNotice />;
   }
 
   return (
@@ -34,17 +46,18 @@ export default function Command() {
       onSearchTextChange={setSearch}
       throttle
       filtering={false}
-      searchBarPlaceholder="Search by Steam ID, profile URL, vanity URL, or display name..."
+      selectedItemId={shouldSearch && data?.results[0] ? `${data.results[0].steamid}:${query}` : undefined}
+      searchBarPlaceholder="Search users by name, Steam ID, or profile URL..."
     >
-      {!query ? (
-        <List.EmptyView title="Search Steam Users" icon={Icon.PersonCircle} />
-      ) : error ? (
-        <List.EmptyView
-          title="Could Not Search Users"
-          description={error instanceof Error ? error.message : "Try again later."}
-          icon={Icon.ExclamationMark}
-        />
-      ) : data?.results.length ? (
+      <SearchEmptyView
+        noun="Users"
+        icon={Icon.PersonCircle}
+        query={query}
+        isLoading={shouldSearch && isLoading}
+        error={error}
+        keyRejected={isRejectedKeyError(error)}
+      />
+      {shouldSearch && data?.results.length ? (
         <List.Section
           title="Search Results"
           subtitle={
@@ -52,26 +65,21 @@ export default function Command() {
           }
         >
           {data.results.map((user) => (
-            <SteamUserListItem key={user.steamid} user={user} />
+            <SteamUserListItem key={user.steamid} user={user} search={query} />
           ))}
         </List.Section>
-      ) : shouldSearch && !isLoading ? (
-        <List.EmptyView title="No Users Found" icon={Icon.PersonCircle} />
-      ) : (
-        <List.EmptyView title="Keep Typing" icon={Icon.MagnifyingGlass} />
-      )}
+      ) : null}
     </List>
   );
 }
 
-function SteamUserListItem({ user }: { user: SteamUserSearchResult }) {
+function SteamUserListItem({ user, search }: { user: SteamUserSearchResult; search: string }) {
   const status = user.gameextrainfo ? `Playing ${user.gameextrainfo}` : getPersonaStateText(user.personastate);
 
   return (
     <List.Item
-      id={user.steamid}
+      id={`${user.steamid}:${search}`}
       title={user.personaname}
-      subtitle={user.realname ?? user.profileurl}
       icon={user.avatarmedium ? { source: user.avatarmedium } : Icon.Person}
       accessories={[
         { text: status },
