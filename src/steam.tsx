@@ -24,6 +24,8 @@ import { GameDataSimple } from "./types";
 import { WebApiKeyNotice } from "./errors";
 
 const WEEK = 7 * 24 * 60 * 60;
+// Matches Steam's own recently played window
+const RECENT_PLAY = 2 * WEEK;
 
 export default function Command() {
   const [search, setSearch] = useState("");
@@ -48,7 +50,7 @@ export default function Command() {
   const recentlyPlayed = useMemo(
     () =>
       (myGames ?? [])
-        .filter((game) => game.rtime_last_played)
+        .filter((game) => (game.rtime_last_played ?? 0) > Date.now() / 1000 - RECENT_PLAY)
         .sort((a, b) => (b.rtime_last_played ?? 0) - (a.rtime_last_played ?? 0))
         .slice(0, 3),
     [myGames],
