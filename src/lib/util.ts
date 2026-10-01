@@ -9,7 +9,7 @@ const DAY = 86_400;
 export const playedRecently = (seconds?: number) => (seconds ?? 0) > Date.now() / 1000 - 14 * DAY;
 // Games from the first import were not necessarily just bought, so they never count as new
 export const addedRecently = (entry?: { firstSeen: number; baseline: boolean }) =>
-  Boolean(entry && !entry.baseline && entry.firstSeen > Date.now() / 1000 - 7 * DAY);
+  Boolean(entry && !entry.baseline && entry.firstSeen > Date.now() / 1000 - 14 * DAY);
 
 const relativeDay = (seconds: number) => {
   const days = Math.floor((Date.now() / 1000 - seconds) / 86_400);

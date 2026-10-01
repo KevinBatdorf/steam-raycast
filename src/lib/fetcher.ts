@@ -234,15 +234,22 @@ export const useLibraryFirstSeen = (games?: GameDataSimple[]) =>
     [games],
   );
 
-export type Ownership = { game: GameDataSimple; status: "played" | "new" | "owned" };
+export type Ownership = { game: GameDataSimple; isNew: boolean; recentlyPlayed: boolean };
 
 export const useOwnership = (myGames?: GameDataSimple[]) => {
   const firstSeen = useLibraryFirstSeen(myGames);
-  return useMemo(() => {
-    const status = (game: GameDataSimple): Ownership["status"] => {
-      if (playedRecently(game.rtime_last_played)) return "played";
-      return addedRecently(firstSeen.get(game.appid)) ? "new" : "owned";
-    };
-    return new Map<number, Ownership>((myGames ?? []).map((game) => [game.appid, { game, status: status(game) }]));
-  }, [myGames, firstSeen]);
+  return useMemo(
+    () =>
+      new Map<number, Ownership>(
+        (myGames ?? []).map((game) => [
+          game.appid,
+          {
+            game,
+            isNew: addedRecently(firstSeen.get(game.appid)),
+            recentlyPlayed: playedRecently(game.rtime_last_played),
+          },
+        ]),
+      ),
+    [myGames, firstSeen],
+  );
 };

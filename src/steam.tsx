@@ -183,6 +183,7 @@ export default function Command() {
                   key={game.appid}
                   game={game}
                   detail={addedText(firstSeen.get(game.appid)?.firstSeen)}
+                  owned={owned.get(game.appid)}
                 />
               ))}
             </List.Section>
@@ -203,7 +204,12 @@ export default function Command() {
           {recentlyPlayed.length ? (
             <List.Section title="Recently Played Games">
               {recentlyPlayed.map((game) => (
-                <MyGamesListType key={game.appid} game={game} detail={playedText(game.rtime_last_played)} />
+                <MyGamesListType
+                  key={game.appid}
+                  game={game}
+                  detail={playedText(game.rtime_last_played)}
+                  owned={owned.get(game.appid)}
+                />
               ))}
             </List.Section>
           ) : null}
