@@ -152,25 +152,29 @@ export const MyGamesListType = ({
   detail?: string;
   owned?: Ownership;
   hide?: "isNew" | "recentlyPlayed";
-}) => (
-  <List.Item
-    id={id}
-    key={game.appid}
-    title={game.name}
-    icon={{
-      source: `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`,
-    }}
-    accessories={[
-      ...(detail ? [{ text: detail }] : []),
-      ...ownedTags(owned && hide ? { ...owned, [hide]: false } : owned, { showOwned: false }),
-      releaseTag(cachedDetails(game.appid)?.data.release_date?.date) ?? {},
-    ]}
-    actions={
-      <ActionPanel>
-        <Action.Push icon={Icon.Sidebar} title="View Game Details" target={<GameDetails game={game} />} />
-        <LaunchActions name={game.name} appid={game?.appid} />
-        <DefaultActions />
-      </ActionPanel>
-    }
-  />
-);
+}) => {
+  // The playtime tag skips unplayed games, so they would otherwise show nothing
+  const text = detail ?? (game.playtime_forever ? undefined : "Not played");
+  return (
+    <List.Item
+      id={id}
+      key={game.appid}
+      title={game.name}
+      icon={{
+        source: `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${game.img_icon_url}.jpg`,
+      }}
+      accessories={[
+        ...(text ? [{ text }] : []),
+        ...ownedTags(owned && hide ? { ...owned, [hide]: false } : owned, { showOwned: false }),
+        releaseTag(cachedDetails(game.appid)?.data.release_date?.date) ?? {},
+      ]}
+      actions={
+        <ActionPanel>
+          <Action.Push icon={Icon.Sidebar} title="View Game Details" target={<GameDetails game={game} />} />
+          <LaunchActions name={game.name} appid={game?.appid} />
+          <DefaultActions />
+        </ActionPanel>
+      }
+    />
+  );
+};

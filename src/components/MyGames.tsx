@@ -59,6 +59,8 @@ export const MyGames = ({ initialSort }: { initialSort?: LibrarySort }) => {
   const detailFor = (game: GameDataSimple) => {
     if (sort === "last-played") return playedText(game.rtime_last_played);
     if (sort === "added") return addedText(firstSeen.get(game.appid)?.firstSeen);
+    // Every row in this view is unplayed, so saying so again is noise
+    if (sort === "never-played") return "";
     return undefined;
   };
 
