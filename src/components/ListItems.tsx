@@ -145,11 +145,13 @@ export const MyGamesListType = ({
   id,
   detail,
   owned,
+  hide,
 }: {
   game: GameDataSimple;
   id?: string;
   detail?: string;
   owned?: Ownership;
+  hide?: "isNew" | "recentlyPlayed";
 }) => (
   <List.Item
     id={id}
@@ -160,7 +162,7 @@ export const MyGamesListType = ({
     }}
     accessories={[
       ...(detail ? [{ text: detail }] : []),
-      ...ownedTags(owned, { showOwned: false }),
+      ...ownedTags(owned && hide ? { ...owned, [hide]: false } : owned, { showOwned: false }),
       releaseTag(cachedDetails(game.appid)?.data.release_date?.date) ?? {},
     ]}
     actions={

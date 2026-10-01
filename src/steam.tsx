@@ -184,6 +184,7 @@ export default function Command() {
                   game={game}
                   detail={addedText(firstSeen.get(game.appid)?.firstSeen)}
                   owned={owned.get(game.appid)}
+                  hide="isNew"
                 />
               ))}
             </List.Section>
@@ -209,6 +210,7 @@ export default function Command() {
                   game={game}
                   detail={playedText(game.rtime_last_played)}
                   owned={owned.get(game.appid)}
+                  hide="recentlyPlayed"
                 />
               ))}
             </List.Section>
