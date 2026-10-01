@@ -12,8 +12,15 @@ import {
 import { rm } from "fs/promises";
 import { join } from "path";
 import { useEffect, useMemo, useState } from "react";
-import { useBatchDetails, useGamesSearch, useMyGames, useLibraryFirstSeen, useResultsWithDetails } from "./lib/fetcher";
-import { addedText, appidFromItemId, itemId, playedText } from "./lib/util";
+import {
+  useBatchDetails,
+  useGamesSearch,
+  useMyGames,
+  useLibraryFirstSeen,
+  useOwnership,
+  useResultsWithDetails,
+} from "./lib/fetcher";
+import { addedRecently, addedText, appidFromItemId, itemId, playedRecently, playedText } from "./lib/util";
 import { MyGamesListType, DynamicGameListItem } from "./components/ListItems";
 import { MyGames } from "./components/MyGames";
 import { Search, SearchList } from "./components/Search";
@@ -22,10 +29,6 @@ import { DefaultActions } from "./components/Actions";
 import { useIsLoggedIn, useKeyRejected, useShowingDetail } from "./lib/hooks";
 import { GameDataSimple } from "./types";
 import { WebApiKeyNotice } from "./errors";
-
-const WEEK = 7 * 24 * 60 * 60;
-// Matches Steam's own recently played window
-const RECENT_PLAY = 2 * WEEK;
 
 export default function Command() {
   const [search, setSearch] = useState("");
@@ -47,10 +50,11 @@ export default function Command() {
 
   const { data: myGames, isLoading: myGamesLoading } = useMyGames();
   const firstSeen = useLibraryFirstSeen(myGames);
+  const owned = useOwnership(myGames);
   const recentlyPlayed = useMemo(
     () =>
       (myGames ?? [])
-        .filter((game) => (game.rtime_last_played ?? 0) > Date.now() / 1000 - RECENT_PLAY)
+        .filter((game) => playedRecently(game.rtime_last_played))
         .sort((a, b) => (b.rtime_last_played ?? 0) - (a.rtime_last_played ?? 0))
         .slice(0, 3),
     [myGames],
@@ -58,10 +62,7 @@ export default function Command() {
   const recentlyAdded = useMemo(
     () =>
       (myGames ?? [])
-        .filter((game) => {
-          const entry = firstSeen.get(game.appid);
-          return entry && !entry.baseline && entry.firstSeen > Date.now() / 1000 - WEEK;
-        })
+        .filter((game) => addedRecently(firstSeen.get(game.appid)))
         .sort((a, b) => (firstSeen.get(b.appid)?.firstSeen ?? 0) - (firstSeen.get(a.appid)?.firstSeen ?? 0))
         .slice(0, 3),
     [myGames, firstSeen],
@@ -194,7 +195,7 @@ export default function Command() {
                   key={game.appid}
                   game={game}
                   ready={true}
-                  myGames={myGames}
+                  owned={owned}
                 />
               ))}
             </List.Section>

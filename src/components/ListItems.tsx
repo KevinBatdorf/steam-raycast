@@ -4,15 +4,21 @@ import { DefaultActions, LaunchActions } from "./Actions";
 import { GameDetails } from "./GameDetails";
 import { itemId, playtimeText } from "../lib/util";
 import { SteamGameError } from "../lib/games";
-import { useGameData } from "../lib/fetcher";
+import { Ownership, useGameData } from "../lib/fetcher";
 import { cachedDetails } from "../lib/details";
 import { releaseTag } from "../lib/release-tag";
+
+const OWNED_TAGS: Record<Ownership["status"], { value: string; color: Color }> = {
+  played: { value: "Recently Played", color: Color.Purple },
+  new: { value: "New", color: Color.Green },
+  owned: { value: "Owned", color: Color.Blue },
+};
 
 export const DynamicGameListItem = ({
   game,
   context,
   ready,
-  myGames = [],
+  owned,
   showingDetail = false,
   onToggleDetail,
   search,
@@ -20,16 +26,16 @@ export const DynamicGameListItem = ({
   game: GameSimple;
   context: "recent" | "recently-viewed" | "random" | "similar" | "Search";
   ready: boolean;
-  myGames?: GameDataSimple[];
+  owned?: Map<number, Ownership>;
   showingDetail?: boolean;
   onToggleDetail?: () => void;
   search?: string;
 }) => {
   const { data: gameData, icon: detailIcon, isError: error } = useGameData({ appid: game.appid, execute: ready });
   const notFound = error instanceof SteamGameError && error.status === 404;
-  const owned = myGames.find((g) => g.appid === game.appid);
-  const image = owned?.img_icon_url
-    ? `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${owned.img_icon_url}.jpg`
+  const mine = game.appid ? owned?.get(game.appid) : undefined;
+  const image = mine?.game.img_icon_url
+    ? `https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/${game.appid}/${mine.game.img_icon_url}.jpg`
     : (game.icon ?? detailIcon);
   const genericIcon = {
     source: gameData?.type === "game" ? Icon.GameController : Icon.Circle,
@@ -45,7 +51,7 @@ export const DynamicGameListItem = ({
         showingDetail
           ? undefined
           : [
-              ...(owned ? [{ tag: { value: "Owned", color: Color.Blue } }] : []),
+              ...(mine ? [{ tag: OWNED_TAGS[mine.status] }] : []),
               ...(gameData?.type && gameData.type !== "game" ? [{ tag: gameData.type }] : []),
               (notFound ? { text: "Game not found" } : releaseTag(gameData?.release_date?.date)) ?? {},
             ]
