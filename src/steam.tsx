@@ -19,6 +19,7 @@ import { DefaultActions } from "./components/Actions";
 import { useIsLoggedIn, useKeyRejected, useShowingDetail } from "./lib/hooks";
 import { GameDataSimple } from "./types";
 import { AccountNotice } from "./errors";
+import { hasSteamWebApiKey } from "./lib/users";
 
 export default function Command() {
   const [search, setSearch] = useState("");
@@ -78,7 +79,7 @@ export default function Command() {
     return false;
   };
 
-  if (keyRejected) return <AccountNotice keyRejected />;
+  if (keyRejected || !hasSteamWebApiKey()) return <AccountNotice keyRejected={keyRejected} />;
 
   return (
     <List

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fakeGameData, fakeGameDataSimpleMany, fakeGames, isFakeData } from "./fake";
 import { GameDataSimple, GameDataSimpleResponse, SteamGameHit } from "../types";
 import { steamFetch } from "./http";
-import { resolveOwnSteamId } from "./users";
+import { getSteamWebApiKey, resolveOwnSteamId } from "./users";
 import { CachedDetails, cachedDetails, fetchBatchDetails, fetchFullDetails, isFresh, needsDetails } from "./details";
 import {
   AppKind,
@@ -62,8 +62,8 @@ const safely = <T>(read: () => T, fallback: T) => {
 };
 
 export const useLocalList = () => {
-  const { token, indexRefresh } = getPreferenceValues<Preferences>();
-  const key = token.trim();
+  const { indexRefresh } = getPreferenceValues<Preferences>();
+  const key = getSteamWebApiKey();
   const [ready, setReady] = useState(() => isFakeData || safely(isIndexReady, false));
   const [error, setError] = useState<Error>();
   const [attempt, setAttempt] = useState(0);
